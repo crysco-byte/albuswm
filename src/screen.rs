@@ -1,14 +1,6 @@
 use {
-    std::{
-        cell::RefCell,
-        cmp,
-    },
-    super::{
-        Dock,
-        Connection,
-        WindowId,
-        Viewport
-    }
+    super::{Connection, Dock, Viewport, WindowId},
+    std::{cell::RefCell, cmp},
 };
 
 #[derive(Default)]
