@@ -1,6 +1,6 @@
-use std::rc::Rc;
 use crate::Albus;
 use crate::Result;
+use std::rc::Rc;
 
 pub type Command = Rc<dyn Fn(&mut Albus) -> Result<()>>;
 

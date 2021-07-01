@@ -34,7 +34,8 @@ fn main() -> Result<()> {
         ([modkey], XK_Return, spawn!("st")),
         ([modkey, ctrl], XK_s, spawn!("qutebrowser")),
         ([modkey], XK_b, spawn!("spotify --force-device-scale-factor=2")),
-        ([modkey], XK_q, spawn!("change-wallpaper")),
+        ([modkey], XK_q, spawn!("pkill", "Xorg")),
+        ([modkey], XK_p, spawn!( "rofi", "-combi-modi", "drun,run,ssh","-theme", "slate", "-show", "combi", "-icon-theme", "Papirus", "-show-icons" )),
 
         ([], XF86XK_MonBrightnessUp, spawn!("xbacklight", "-inc", "10")),
         ([], XF86XK_MonBrightnessDown, spawn!("xbacklight", "-dec", "10")),
@@ -48,6 +49,7 @@ fn main() -> Result<()> {
 
     let padding = 20;
     let layouts = layouts![
+        FloatingMasterLayout::new("floating_master"),
         StackLayout::new("stack-padded", padding),
         StackLayout::new("stack", 0),
         TiledLayout::new("tiled", padding),

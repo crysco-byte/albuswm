@@ -10,7 +10,6 @@ use crate::keys::{KeyCombo, KeyHandlers};
 use crate::stack::Stack;
 use crate::Result;
 
-
 pub use self::ewmh::StrutPartial;
 
 /// A handle to an X Window.
@@ -307,6 +306,11 @@ impl Connection {
             (xcb::CONFIG_WINDOW_WIDTH as u16, width),
             (xcb::CONFIG_WINDOW_HEIGHT as u16, height),
         ];
+        xcb::configure_window(&self.conn, window_id.to_x(), &values);
+    }
+
+    pub fn stack_window_above(&self, window_id: &WindowId) {
+        let values = [(xcb::CONFIG_WINDOW_STACK_MODE as u16, xcb::STACK_MODE_ABOVE)];
         xcb::configure_window(&self.conn, window_id.to_x(), &values);
     }
 
