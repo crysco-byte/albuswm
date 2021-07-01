@@ -2,34 +2,26 @@
 #[macro_use]
 extern crate log;
 pub mod cmd;
-pub mod layout;
-pub mod screen;
 mod groups;
 mod keys;
+pub mod layout;
+pub mod screen;
 mod stack;
 mod x;
-mod albuswm;
+pub use crate::{groups::GroupBuilder, keys::ModKey, screen::Screen, stack::Stack};
 use {
-    crate::{
-        x::{Connection, StrutPartial, WindowId}
-    },
+    crate::x::{Connection, StrutPartial, WindowId},
     failure::{Error, ResultExt},
-};
-pub use crate::{
-    screen::Screen,
-    groups::GroupBuilder,
-    keys::ModKey,
-    stack::Stack
 };
 
 use {
-    std::{rc::Rc},
     crate::{
+        groups::Group,
         keys::{KeyCombo, KeyHandlers},
         layout::Layout,
-        x::{WindowType, Event},
-        groups::{Group},
+        x::{Event, WindowType},
     },
+    std::rc::Rc,
 };
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -128,8 +120,6 @@ struct Dock {
     strut_partial: Option<StrutPartial>,
 }
 
-
-
 pub struct Albus {
     connection: Rc<Connection>,
     keys: KeyHandlers,
@@ -177,7 +167,7 @@ impl Albus {
             .connection
             .get_window_geometry(self.connection.root_window_id());
         self.screen.viewport(width, height)
-    } 
+    }
     pub fn group(&self) -> &Group {
         self.groups.focused().expect("Invariant: No active group!")
     }
