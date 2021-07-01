@@ -1,11 +1,10 @@
 [package]
-name = "lanta"
+name = "albuswm"
 version = "0.1.0"
-authors = ["Michael Killough <michaeljkillough@gmail.com>"]
 edition = "2018"
 
 [[bin]]
-name = "lanta"
+name = "albuswm"
 doc = false
 
 [dependencies]

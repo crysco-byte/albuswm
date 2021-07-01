@@ -1,25 +1,26 @@
 #[macro_use]
-extern crate lanta;
+extern crate albuswm;
 
-use lanta::layout::*;
-use lanta::{cmd, Lanta, ModKey, Result};
+use albuswm::layout::*;
+use albuswm::{cmd, Albus, ModKey, Result};
 
 macro_rules! spawn {
-    ($cmd:expr) => (::lanta::cmd::lazy::spawn(::std::process::Command::new($cmd)));
+    ($cmd:expr) => (::albuswm::cmd::lazy::spawn(::std::process::Command::new($cmd)));
     ($cmd:expr, $($arg:expr),*) => {{
         let mut command = ::std::process::Command::new($cmd);
         $(
             command.arg($arg);
         )*
-        ::lanta::cmd::lazy::spawn(command)
+        ::albuswm::cmd::lazy::spawn(command)
     }}
 }
 
 fn main() -> Result<()> {
-    lanta::intiailize_logger()?;
+    albuswm::intiailize_logger()?;
 
-    let modkey = ModKey::Mod4;
+    let modkey = ModKey::Mod1;
     let shift = ModKey::Shift;
+    let ctrl = ModKey::Control;
 
     #[rustfmt::skip]
     let mut keys = keys![
@@ -30,9 +31,8 @@ fn main() -> Result<()> {
         ([modkey, shift], XK_k, cmd::lazy::shuffle_previous()),
         ([modkey], XK_Tab, cmd::lazy::layout_next()),
 
-        ([modkey], XK_Return, spawn!("urxvt")),
-        ([modkey], XK_c, spawn!("firefox")),
-        ([modkey], XK_v, spawn!("code-oss")),
+        ([modkey], XK_Return, spawn!("st")),
+        ([modkey, ctrl], XK_s, spawn!("qutebrowser")),
         ([modkey], XK_b, spawn!("spotify --force-device-scale-factor=2")),
         ([modkey], XK_q, spawn!("change-wallpaper")),
 
@@ -64,7 +64,7 @@ fn main() -> Result<()> {
         ]
     };
 
-    Lanta::new(keys, groups, &layouts)?.run();
+    Albus::new(keys, groups, &layouts)?.run();
 
     Ok(())
 }

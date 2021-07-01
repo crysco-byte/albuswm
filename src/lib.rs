@@ -8,15 +8,10 @@ mod groups;
 mod keys;
 mod stack;
 mod x;
+mod albuswm;
 use {
-    std::{
-        rc::Rc
-    },
     crate::{
-        groups::Group,
-        keys::{KeyCombo, KeyHandlers},
-        layout::Layout,
-        x::{Connection, Event, StrutPartial, WindowId, WindowType}
+        x::{Connection, StrutPartial, WindowId}
     },
     failure::{Error, ResultExt},
 };
@@ -27,7 +22,15 @@ pub use crate::{
     stack::Stack
 };
 
-
+use {
+    std::{rc::Rc},
+    crate::{
+        keys::{KeyCombo, KeyHandlers},
+        layout::Layout,
+        x::{WindowType, Event},
+        groups::{Group},
+    },
+};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -125,14 +128,16 @@ struct Dock {
     strut_partial: Option<StrutPartial>,
 }
 
-pub struct Lanta {
+
+
+pub struct Albus {
     connection: Rc<Connection>,
     keys: KeyHandlers,
     groups: Stack<Group>,
     screen: Screen,
 }
 
-impl Lanta {
+impl Albus {
     pub fn new<K>(keys: K, groups: Vec<GroupBuilder>, layouts: &[Box<dyn Layout>]) -> Result<Self>
     where
         K: Into<KeyHandlers>,
@@ -148,7 +153,7 @@ impl Lanta {
                 .collect::<Vec<Group>>(),
         );
 
-        let mut wm = Lanta {
+        let mut wm = Albus {
             keys,
             groups,
             connection: connection.clone(),
@@ -172,8 +177,7 @@ impl Lanta {
             .connection
             .get_window_geometry(self.connection.root_window_id());
         self.screen.viewport(width, height)
-    }
-
+    } 
     pub fn group(&self) -> &Group {
         self.groups.focused().expect("Invariant: No active group!")
     }

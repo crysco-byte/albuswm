@@ -1,9 +1,8 @@
 use std::rc::Rc;
-
-use crate::Lanta;
+use crate::Albus;
 use crate::Result;
 
-pub type Command = Rc<dyn Fn(&mut Lanta) -> Result<()>>;
+pub type Command = Rc<dyn Fn(&mut Albus) -> Result<()>>;
 
 /// Lazy-functions which return a `Command` to do the requested action.
 // TODO: Consider offering non-lazy versions and then having simple lazy
