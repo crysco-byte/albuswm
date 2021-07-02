@@ -1,6 +1,6 @@
 use crate::layout::Layout;
 use crate::stack::Stack;
-use crate::x::{ConfigureWindowDimensions, Connection, WindowId};
+use crate::x::{WindowGeometry, Connection, WindowId};
 use crate::Viewport;
 
 #[derive(Clone)]
@@ -31,7 +31,7 @@ impl Layout for TiledLayout {
         let tile_height = ((viewport.height - self.padding) / stack.len() as u32) - self.padding;
 
         for (i, window_id) in stack.iter().enumerate() {
-            let dimensions = ConfigureWindowDimensions {
+            let geometry = WindowGeometry {
                 x: viewport.x + self.padding,
                 y: viewport.y + self.padding + (i as u32 * (tile_height + self.padding)),
                 width: viewport.width - (self.padding * 22),
@@ -39,7 +39,7 @@ impl Layout for TiledLayout {
             };
             connection.disable_window_tracking(window_id);
             connection.map_window(window_id);
-            connection.configure_window(window_id, &dimensions);
+            connection.configure_window(window_id, &geometry);
             connection.enable_window_tracking(window_id);
         }
     }
