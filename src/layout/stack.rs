@@ -1,6 +1,6 @@
 use crate::layout::Layout;
 use crate::stack::Stack;
-use crate::x::{WindowGeometry, Connection, WindowId};
+use crate::x::{Connection, WindowGeometry, WindowId};
 use crate::Viewport;
 
 #[derive(Clone)]

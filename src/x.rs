@@ -5,11 +5,11 @@ use failure::{format_err, ResultExt};
 use xcb_util::keysyms::KeySymbols;
 use xcb_util::{ewmh, icccm};
 
-use crate::Viewport;
 use crate::groups::Group;
 use crate::keys::{KeyCombo, KeyHandlers};
 use crate::stack::Stack;
 use crate::Result;
+use crate::Viewport;
 
 pub use self::ewmh::StrutPartial;
 
@@ -307,11 +307,7 @@ impl Connection {
     }
 
     /// Sets the window's position and size.
-    pub fn configure_window(
-        &self,
-        window_id: &WindowId,
-        window_config: &WindowGeometry,
-    ) {
+    pub fn configure_window(&self, window_id: &WindowId, window_config: &WindowGeometry) {
         let values = [
             (xcb::CONFIG_WINDOW_X as u16, window_config.x),
             (xcb::CONFIG_WINDOW_Y as u16, window_config.y),
@@ -520,12 +516,12 @@ impl<'a> EventLoop<'a> {
 }
 
 impl WindowGeometry {
-    pub fn default(viewport: &Viewport) -> Self{
+    pub fn default(viewport: &Viewport) -> Self {
         Self {
             x: viewport.x,
             y: viewport.y,
             width: viewport.width,
-            height: viewport.height
+            height: viewport.height,
         }
     }
 }

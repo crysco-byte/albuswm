@@ -31,15 +31,12 @@ pub mod keysym {
 }
 
 /// Initializes a logger using the default configuration.
-///
-/// Outputs to stdout and `$XDG_DATA/lanta/lanta.log` by default.
-/// You should feel free to initialize your own logger, instead of using this.
 pub fn intiailize_logger() -> Result<()> {
     log_panics::init();
 
-    let xdg_dirs = xdg::BaseDirectories::with_prefix("lanta")?;
+    let xdg_dirs = xdg::BaseDirectories::with_prefix("albus")?;
     let log_path = xdg_dirs
-        .place_data_file("lanta.log")
+        .place_data_file("albus.log")
         .context("Could not create log file")?;
 
     fern::Dispatch::new()
