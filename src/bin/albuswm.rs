@@ -49,9 +49,9 @@ fn main() -> Result<()> {
         shift,
         [
             ([modkey], XK_a, "alpha", "stack"),
-            ([modkey], XK_s, "beta", "stack"),
-            ([modkey], XK_d, "gamma", "tiled"),
-            ([modkey], XK_f, "delta", "tiled"),
+            ([modkey], XK_s, "beta",  "stack"),
+            ([modkey], XK_d, "gamma", "stack"),
+            ([modkey], XK_f, "delta", "stack"),
         ]
     };
 
