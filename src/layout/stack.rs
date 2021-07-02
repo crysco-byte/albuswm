@@ -1,6 +1,6 @@
 use crate::layout::Layout;
 use crate::stack::Stack;
-use crate::x::{ConfigureWindowDimensions, Connection, WindowId};
+use crate::x::{WindowGeometry, Connection, WindowId};
 use crate::Viewport;
 
 #[derive(Clone)]
@@ -30,7 +30,7 @@ impl Layout for StackLayout {
 
         // A non-empty `Stack` is guaranteed to have something focused.
         let focused_id = stack.focused().unwrap();
-        let dimensions = ConfigureWindowDimensions {
+        let geometry = WindowGeometry {
             x: viewport.x + self.padding,
             y: viewport.y + self.padding,
             width: viewport.width - (self.padding * 2),
@@ -47,7 +47,7 @@ impl Layout for StackLayout {
         }
         connection.disable_window_tracking(focused_id);
         connection.map_window(focused_id);
-        connection.configure_window(focused_id, &dimensions);
+        connection.configure_window(focused_id, &geometry);
         connection.enable_window_tracking(focused_id);
     }
 }
