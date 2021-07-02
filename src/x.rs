@@ -5,6 +5,7 @@ use failure::{format_err, ResultExt};
 use xcb_util::keysyms::KeySymbols;
 use xcb_util::{ewmh, icccm};
 
+use crate::Viewport;
 use crate::groups::Group;
 use crate::keys::{KeyCombo, KeyHandlers};
 use crate::stack::Stack;
@@ -515,5 +516,16 @@ impl<'a> EventLoop<'a> {
 
     fn on_enter_notify(&self, event: &xcb::EnterNotifyEvent) -> Option<Event> {
         Some(Event::EnterNotify(WindowId(event.event())))
+    }
+}
+
+impl ConfigureWindowDimensions {
+    fn default(viewport: &Viewport) -> Self{
+        Self {
+            x: viewport.x,
+            y: viewport.y,
+            width: viewport.width,
+            height: viewport.height
+        }
     }
 }
