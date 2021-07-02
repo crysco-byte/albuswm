@@ -4,10 +4,8 @@ use crate::stack::Stack;
 use crate::x::{Connection, WindowId};
 use crate::Viewport;
 
-mod floating_master;
 mod stack;
 
-pub use self::floating_master::FloatingMasterLayout;
 pub use self::stack::StackLayout;
 
 pub trait LayoutClone {

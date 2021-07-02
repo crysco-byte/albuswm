@@ -39,7 +39,6 @@ fn main() -> Result<()> {
 
     let padding = 20;
     let layouts = layouts![
-        FloatingMasterLayout::new("floating_master"),
         StackLayout::new("stack-padded", padding),
         StackLayout::new("stack", 0),
     ];
