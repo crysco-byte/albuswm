@@ -29,7 +29,7 @@ impl fmt::Display for WindowId {
     }
 }
 
-pub struct ConfigureWindowDimensions {
+pub struct WindowGeometry {
     pub x: u32,
     pub y: u32,
     pub width: u32,
@@ -310,7 +310,7 @@ impl Connection {
     pub fn configure_window(
         &self,
         window_id: &WindowId,
-        window_config: &ConfigureWindowDimensions,
+        window_config: &WindowGeometry,
     ) {
         let values = [
             (xcb::CONFIG_WINDOW_X as u16, window_config.x),
@@ -519,8 +519,8 @@ impl<'a> EventLoop<'a> {
     }
 }
 
-impl ConfigureWindowDimensions {
-    fn default(viewport: &Viewport) -> Self{
+impl WindowGeometry {
+    pub fn default(viewport: &Viewport) -> Self{
         Self {
             x: viewport.x,
             y: viewport.y,
