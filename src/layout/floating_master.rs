@@ -1,6 +1,6 @@
 use crate::layout::Layout;
 use crate::stack::Stack;
-use crate::x::{Connection, WindowId};
+use crate::x::{ConfigureWindowDimensions, Connection, WindowId};
 use crate::Viewport;
 
 #[derive(Clone)]
@@ -30,13 +30,15 @@ impl Layout for FloatingMasterLayout {
             connection.map_window(master_window_id);
             connection.configure_window(
                 master_window_id,
-                viewport.x,
-                viewport.y,
-                viewport.width,
-                viewport.height
+                &ConfigureWindowDimensions {
+                    x: viewport.x,
+                    y: viewport.y,
+                    width: viewport.width,
+                    height: viewport.height,
+                },
             );
             connection.enable_window_tracking(master_window_id);
-        }else {
+        } else {
             Self::configure_master_window(master_window_id, connection, viewport);
             for window_id in stack.iter() {
                 if window_id != master_window_id {
@@ -44,7 +46,7 @@ impl Layout for FloatingMasterLayout {
                         normal_window_acc,
                         window_id,
                         connection,
-                        viewport
+                        viewport,
                     );
                     normal_window_acc += 1;
                 }
@@ -59,15 +61,20 @@ impl FloatingMasterLayout {
         connection: &Connection,
         viewport: &Viewport,
     ) {
+        let dimensions = ConfigureWindowDimensions {
+            x: viewport.x
+                + (if inter_num > 1 {
+                    viewport.width / inter_num
+                } else {
+                    0
+                }),
+            y: viewport.y,
+            width: viewport.width / inter_num,
+            height: viewport.height,
+        };
         connection.disable_window_tracking(window_id);
         connection.map_window(window_id);
-        connection.configure_window(
-            window_id,
-            viewport.x + (if inter_num > 1 {viewport.width / inter_num} else {0}),
-            viewport.y,
-            viewport.width / inter_num,
-            viewport.height,
-        );
+        connection.configure_window(window_id, &dimensions);
         connection.enable_window_tracking(window_id);
     }
 
@@ -76,15 +83,15 @@ impl FloatingMasterLayout {
         connection: &Connection,
         viewport: &Viewport,
     ) {
+        let dimensions = ConfigureWindowDimensions {
+            x: viewport.x + 150,
+            y: viewport.y + 50,
+            width: viewport.width - 300,
+            height: viewport.height - 100,
+        };
         connection.disable_window_tracking(master_window_id);
         connection.map_window(master_window_id);
-        connection.configure_window(
-            master_window_id,
-            viewport.x + 150,
-            viewport.y + 50,
-            viewport.width - 300,
-            viewport.height - 100,
-        );
+        connection.configure_window(master_window_id, &dimensions);
         connection.stack_window_above(master_window_id);
         connection.enable_window_tracking(master_window_id);
     }

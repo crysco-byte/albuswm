@@ -35,7 +35,7 @@ impl<T> Stack<T> {
     pub fn get_first_element(&self) -> Option<&T> {
         if self.before.len() > 0 {
             self.before.get(0)
-        }else {
+        } else {
             self.after.get(0)
         }
     }

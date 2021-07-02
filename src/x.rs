@@ -28,6 +28,13 @@ impl fmt::Display for WindowId {
     }
 }
 
+pub struct ConfigureWindowDimensions {
+    pub x: u32,
+    pub y: u32,
+    pub width: u32,
+    pub height: u32,
+}
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum WindowType {
     Desktop,
@@ -299,12 +306,16 @@ impl Connection {
     }
 
     /// Sets the window's position and size.
-    pub fn configure_window(&self, window_id: &WindowId, x: u32, y: u32, width: u32, height: u32) {
+    pub fn configure_window(
+        &self,
+        window_id: &WindowId,
+        window_config: &ConfigureWindowDimensions,
+    ) {
         let values = [
-            (xcb::CONFIG_WINDOW_X as u16, x),
-            (xcb::CONFIG_WINDOW_Y as u16, y),
-            (xcb::CONFIG_WINDOW_WIDTH as u16, width),
-            (xcb::CONFIG_WINDOW_HEIGHT as u16, height),
+            (xcb::CONFIG_WINDOW_X as u16, window_config.x),
+            (xcb::CONFIG_WINDOW_Y as u16, window_config.y),
+            (xcb::CONFIG_WINDOW_WIDTH as u16, window_config.width),
+            (xcb::CONFIG_WINDOW_HEIGHT as u16, window_config.height),
         ];
         xcb::configure_window(&self.conn, window_id.to_x(), &values);
     }
