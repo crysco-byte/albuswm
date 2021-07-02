@@ -5,8 +5,10 @@ use crate::x::{Connection, WindowId};
 use crate::Viewport;
 
 mod stack;
+mod tile;
 
 pub use self::stack::StackLayout;
+pub use self::tile::TileLayout;
 
 pub trait LayoutClone {
     fn clone_box(&self) -> Box<dyn Layout>;
