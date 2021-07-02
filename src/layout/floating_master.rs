@@ -19,79 +19,73 @@ impl Layout for FloatingMasterLayout {
         &self.name
     }
 
-    fn layout(&self, connection: &Connection, viewport: &Viewport, stack:&Stack<WindowId>){
-        if stack.is_empty() {return};
-        let focused_window_id = stack.focused().unwrap();
-        let _: () = stack.iter().enumerate()
-            .map(|(i, window_id)| {
-                if window_id != focused_window_id {
-                    connection.disable_window_tracking(window_id);
-                    connection.configure_window(
+    fn layout(&self, connection: &Connection, viewport: &Viewport, stack: &Stack<WindowId>) {
+        if stack.is_empty() {
+            return;
+        };
+        let master_window_id = stack.get_first_element().unwrap();
+        let mut normal_window_acc = 1;
+        if stack.len() < 2 {
+            connection.disable_window_tracking(master_window_id);
+            connection.map_window(master_window_id);
+            connection.configure_window(
+                master_window_id,
+                viewport.x,
+                viewport.y,
+                viewport.width,
+                viewport.height
+            );
+            connection.enable_window_tracking(master_window_id);
+        }else {
+            Self::configure_master_window(master_window_id, connection, viewport);
+            for window_id in stack.iter() {
+                if window_id != master_window_id {
+                    Self::configure_normal_window(
+                        normal_window_acc,
                         window_id,
-                        viewport.x + (if i < 1 {0} else {viewport.x / (i as u32)}),
-                        viewport.y,
-                        viewport.width / (i + 1) as u32,
-                        viewport.height,
-                    )
+                        connection,
+                        viewport
+                    );
+                    normal_window_acc += 1;
                 }
-            }).collect();
-        connection.disable_window_tracking(focused_window_id);
+            }
+        }
+    }
+}
+impl FloatingMasterLayout {
+    fn configure_normal_window(
+        inter_num: u32,
+        window_id: &WindowId,
+        connection: &Connection,
+        viewport: &Viewport,
+    ) {
+        connection.disable_window_tracking(window_id);
+        connection.map_window(window_id);
         connection.configure_window(
-            focused_window_id,
+            window_id,
+            viewport.x + (if inter_num > 1 {viewport.width / inter_num} else {0}),
+            viewport.y,
+            viewport.width / inter_num,
+            viewport.height,
+        );
+        connection.enable_window_tracking(window_id);
+    }
+
+    fn configure_master_window(
+        master_window_id: &WindowId,
+        connection: &Connection,
+        viewport: &Viewport,
+    ) {
+        connection.disable_window_tracking(master_window_id);
+        connection.map_window(master_window_id);
+        connection.configure_window(
+            master_window_id,
             viewport.x + 150,
             viewport.y + 50,
             viewport.width - 300,
-            viewport.height - 100
+            viewport.height - 100,
         );
-        connection.stack_window_above(focused_window_id);
-        connection.enable_window_tracking(focused_window_id);
+        connection.stack_window_above(master_window_id);
+        connection.enable_window_tracking(master_window_id);
     }
 }
-
-// impl Layout for FloatingMasterLayout {
-//     fn name(&self) -> &str {
-//         &self.name
-//     }
-
-//     fn layout(&self, connection: &Connection, viewport: &Viewport, stack: &Stack<WindowId>) {
-//         if stack.is_empty() {
-//             return;
-//         }
-//         let focused_window = stack.focused().unwrap();
-//         let _: () = stack
-//             .iter()
-//             .map(|window_id| {
-//                 if window_id != focused_window {
-//                     Self::configure_normal(window_id, connection, viewport, stack.len() as u32);
-//                 }
-//             }).collect();
-//         Self::configure_master(focused_window, connection, viewport);
-//     }
-// }
-
-// impl FloatingMasterLayout {
-//     fn configure_master(window_id: &WindowId, connection: &Connection, viewport: &Viewport) {
-//         connection.disable_window_tracking(window_id);
-//         connection.configure_window(
-//             window_id,
-//             viewport.x + 150,
-//             viewport.y + 50,
-//             viewport.width - 300,
-//             viewport.height - 100,
-//         );
-//         connection.stack_window_above(window_id);
-//         connection.enable_window_tracking(window_id);
-//     }
-
-//     fn configure_normal(window_id: &WindowId, connection: &Connection, viewport: &Viewport, stack_length: u32) {
-//         connection.disable_window_tracking(window_id);
-//         connection.configure_window(
-//             window_id,
-//             viewport.x + (viewport.x / (stack_length - 1)),
-//             viewport.y,
-//             viewport.width / stack_length,
-//             viewport.height,
-//         );
-//         connection.enable_window_tracking(window_id);
-//     }
-// }

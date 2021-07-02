@@ -32,6 +32,14 @@ impl<T> Stack<T> {
         Stack::default()
     }
 
+    pub fn get_first_element(&self) -> Option<&T> {
+        if self.before.len() > 0 {
+            self.before.get(0)
+        }else {
+            self.after.get(0)
+        }
+    }
+
     /// Returns the number of elements in the stack.
     pub fn len(&self) -> usize {
         self.before.len() + self.after.len()
