@@ -68,7 +68,6 @@ pub mod lazy {
     }
 
     /// Spawns the specified command.
-    ///
     /// The returned `Command` will spawn the `Command` each time it is called.
     pub fn spawn(command: process::Command) -> Command {
         let mutex = Mutex::new(command);
