@@ -6,11 +6,9 @@ use crate::Viewport;
 
 mod floating_master;
 mod stack;
-mod tiled;
 
 pub use self::floating_master::FloatingMasterLayout;
 pub use self::stack::StackLayout;
-pub use self::tiled::TiledLayout;
 
 pub trait LayoutClone {
     fn clone_box(&self) -> Box<dyn Layout>;

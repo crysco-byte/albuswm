@@ -42,7 +42,6 @@ fn main() -> Result<()> {
         FloatingMasterLayout::new("floating_master"),
         StackLayout::new("stack-padded", padding),
         StackLayout::new("stack", 0),
-        TiledLayout::new("tiled", padding),
     ];
 
     let groups = groups! {
