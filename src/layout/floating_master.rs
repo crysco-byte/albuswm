@@ -1,6 +1,6 @@
 use crate::layout::Layout;
 use crate::stack::Stack;
-use crate::x::{ConfigureWindowDimensions, Connection, WindowId};
+use crate::x::{WindowGeometry, Connection, WindowId};
 use crate::Viewport;
 
 #[derive(Clone)]
@@ -26,18 +26,7 @@ impl Layout for FloatingMasterLayout {
         let master_window_id = stack.get_first_element().unwrap();
         let mut normal_window_acc = 1;
         if stack.len() < 2 {
-            connection.disable_window_tracking(master_window_id);
-            connection.map_window(master_window_id);
-            connection.configure_window(
-                master_window_id,
-                &ConfigureWindowDimensions {
-                    x: viewport.x,
-                    y: viewport.y,
-                    width: viewport.width,
-                    height: viewport.height,
-                },
-            );
-            connection.enable_window_tracking(master_window_id);
+            Self::configure_single_window(master_window_id, connection, viewport);
         } else {
             Self::configure_master_window(master_window_id, connection, viewport);
             for window_id in stack.iter() {
@@ -61,7 +50,7 @@ impl FloatingMasterLayout {
         connection: &Connection,
         viewport: &Viewport,
     ) {
-        let dimensions = ConfigureWindowDimensions {
+        let geometry = WindowGeometry {
             x: viewport.x
                 + (if inter_num > 1 {
                     viewport.width / inter_num
@@ -74,7 +63,19 @@ impl FloatingMasterLayout {
         };
         connection.disable_window_tracking(window_id);
         connection.map_window(window_id);
-        connection.configure_window(window_id, &dimensions);
+        connection.configure_window(window_id, &geometry);
+        connection.enable_window_tracking(window_id);
+    }
+
+    fn configure_single_window (
+        window_id: &WindowId,
+        connection: &Connection,
+        viewport: &Viewport,
+    ) {
+        let default_window_geometry = WindowGeometry::default(viewport);
+        connection.disable_window_tracking(window_id);
+        connection.map_window(window_id);
+        connection.configure_window(window_id, &default_window_geometry);
         connection.enable_window_tracking(window_id);
     }
 
@@ -83,7 +84,7 @@ impl FloatingMasterLayout {
         connection: &Connection,
         viewport: &Viewport,
     ) {
-        let dimensions = ConfigureWindowDimensions {
+        let geometry = WindowGeometry {
             x: viewport.x + 150,
             y: viewport.y + 50,
             width: viewport.width - 300,
@@ -91,7 +92,7 @@ impl FloatingMasterLayout {
         };
         connection.disable_window_tracking(master_window_id);
         connection.map_window(master_window_id);
-        connection.configure_window(master_window_id, &dimensions);
+        connection.configure_window(master_window_id, &geometry);
         connection.stack_window_above(master_window_id);
         connection.enable_window_tracking(master_window_id);
     }
