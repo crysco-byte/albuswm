@@ -20,7 +20,7 @@ fn main() -> Result<()> {
 
     let modkey = ModKey::Mod1;
     let shift = ModKey::Shift;
-    let ctrl = ModKey::Control;
+    //let ctrl = ModKey::Control;
 
     #[rustfmt::skip]
     let mut keys = keys![
@@ -31,9 +31,8 @@ fn main() -> Result<()> {
         ([modkey, shift], XK_k, cmd::lazy::shuffle_previous()),
         ([modkey], XK_Tab, cmd::lazy::layout_next()),
 
-        ([modkey], XK_Return, spawn!("st")),
-        ([modkey, ctrl], XK_s, spawn!("qutebrowser")),
-        ([modkey], XK_b, spawn!("spotify --force-device-scale-factor=2")),
+        ([modkey], XK_Return, spawn!("alacritty")),
+        ([modkey], XK_s, spawn!("qutebrowser")),
         ([modkey], XK_q, spawn!("pkill", "Xorg")),
         ([modkey], XK_p, spawn!( "rofi", "-combi-modi", "drun,run,ssh","-theme", "slate", "-show", "combi", "-icon-theme", "Papirus", "-show-icons" )),
 
