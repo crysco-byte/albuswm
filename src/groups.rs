@@ -59,6 +59,26 @@ impl Group {
         self.perform_layout();
     }
 
+    pub fn resize_right(&mut self) {
+        if !self.active {
+            return;
+        }
+        if let Some(layout) = self.layouts.focused_mut() {
+            layout.resize_right(&self.viewport, 80);
+        }
+        self.perform_layout();
+    }
+
+    pub fn resize_left(&mut self) {
+        if !self.active {
+            return;
+        }
+        if let Some(layout) = self.layouts.focused_mut() {
+            layout.resize_left(&self.viewport, 80);
+        }
+        self.perform_layout();
+    }
+
     pub fn update_viewport(&mut self, viewport: Viewport) {
         self.viewport = viewport;
         self.perform_layout();

@@ -26,6 +26,8 @@ where
 pub trait Layout: LayoutClone {
     fn name(&self) -> &str;
     fn layout(&self, connection: &Connection, viewport: &Viewport, stack: &Stack<WindowId>);
+    fn resize_right(&mut self, viewport: &Viewport, resize_amount: i16);
+    fn resize_left(&mut self, viewport: &Viewport, resize_amount: i16);
 }
 
 impl Clone for Box<dyn Layout> {

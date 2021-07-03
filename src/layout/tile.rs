@@ -6,6 +6,7 @@ use crate::Viewport;
 #[derive(Clone)]
 pub struct TileLayout {
     name: String,
+    resized_width: i16,
 }
 
 impl Layout for TileLayout {
@@ -17,19 +18,42 @@ impl Layout for TileLayout {
             return;
         }
         let focused_id = stack.focused().unwrap();
-        let mut accumulator : u32 = 0;
+        let mut accumulator: u32 = 0;
         if stack.len() < 2 {
-            // Maybe this panics when changing groups because the window is not focused
             Self::configure_single_window(connection, viewport, focused_id);
         } else {
-            Self::configure_focused_window(connection, viewport, focused_id);
+            self.configure_focused_window(connection, viewport, focused_id);
             for window_id in stack.iter() {
                 if window_id != focused_id {
-                    Self::configure_unfocused_window(accumulator, connection, stack, viewport, window_id);
+                    self.configure_unfocused_window(
+                        accumulator,
+                        connection,
+                        stack,
+                        viewport,
+                        window_id,
+                    );
                     accumulator += 1;
                 }
             }
         }
+    }
+
+    fn resize_left(&mut self, viewport: &Viewport, resize_amount: i16) {
+        self.resized_width -=
+            if self.resized_width > -((viewport.width / 2) as i16 - (viewport.width / 8) as i16) {
+                resize_amount
+            } else {
+                return;
+            };
+    }
+
+    fn resize_right(&mut self, viewport: &Viewport, resize_amount: i16) {
+        self.resized_width +=
+            if self.resized_width < ((viewport.width / 2) as i16 - (viewport.width / 8) as i16) {
+                resize_amount
+            } else {
+                return;
+            };
     }
 }
 
@@ -37,23 +61,19 @@ impl TileLayout {
     pub fn new<S: Into<String>>(name: S) -> TileLayout {
         Self {
             name: name.into(),
+            resized_width: 0,
         }
     }
 
     fn configure_unfocused_window(
+        &self,
         i: u32,
         connection: &Connection,
         stack: &Stack<WindowId>,
         viewport: &Viewport,
         window_id: &WindowId,
     ) {
-        let window_height = viewport.height / (stack.len() - 1) as u32;
-        let unfocused_geometry = WindowGeometry {
-            x: viewport.width / 2,
-            y: i as u32 * window_height,
-            width: viewport.width / 2,
-            height: window_height,
-        };
+        let unfocused_geometry = self.get_unfocused_geometry(i, stack, viewport);
         connection.disable_window_tracking(window_id);
         connection.map_window(window_id);
         connection.configure_window(window_id, &unfocused_geometry);
@@ -61,20 +81,43 @@ impl TileLayout {
     }
 
     fn configure_focused_window(
+        &self,
         connection: &Connection,
         viewport: &Viewport,
         window_id: &WindowId,
     ) {
-        let focused_geometry = WindowGeometry {
-            x: viewport.x,
-            y: viewport.y,
-            width: viewport.width / 2,
-            height: viewport.height,
-        };
+        let focused_geometry = self.get_focused_geometry(viewport);
         connection.disable_window_tracking(window_id);
         connection.map_window(window_id);
         connection.configure_window(window_id, &focused_geometry);
         connection.enable_window_tracking(window_id);
+    }
+
+    fn get_unfocused_geometry(
+        &self,
+        i: u32,
+        stack: &Stack<WindowId>,
+        viewport: &Viewport,
+    ) -> WindowGeometry {
+        let x = ((viewport.width / 2) as i16 + self.resized_width) as u32;
+        let width = ((viewport.width / 2) as i16 - (self.resized_width)) as u32;
+        let height = viewport.height / (stack.len() - 1) as u32;
+        WindowGeometry {
+            x,
+            y: i as u32 * height,
+            width,
+            height,
+        }
+    }
+
+    fn get_focused_geometry(&self, viewport: &Viewport) -> WindowGeometry {
+        let width = (((viewport.width / 2) as i16) + (self.resized_width)) as u32;
+        WindowGeometry {
+            x: viewport.x,
+            y: viewport.y,
+            width,
+            height: viewport.height,
+        }
     }
 
     fn configure_single_window(connection: &Connection, viewport: &Viewport, window_id: &WindowId) {

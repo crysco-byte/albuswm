@@ -26,6 +26,8 @@ fn main() -> Result<()> {
     let mut keys = keys![
         ([modkey], XK_w, cmd::lazy::close_focused_window()),
         ([modkey], XK_j, cmd::lazy::focus_next()),
+        ([modkey], XK_h, cmd::lazy::resize_left()),
+        ([modkey], XK_l, cmd::lazy::resize_right()),
         ([modkey], XK_k, cmd::lazy::focus_previous()),
         ([modkey, shift], XK_j, cmd::lazy::shuffle_next()),
         ([modkey, shift], XK_k, cmd::lazy::shuffle_previous()),

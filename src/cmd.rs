@@ -33,6 +33,20 @@ pub mod lazy {
         })
     }
 
+    pub fn resize_right() -> Command {
+        Rc::new(|ref mut wm| {
+            wm.group_mut().resize_right();
+            Ok(())
+        })
+    }
+
+    pub fn resize_left() -> Command {
+        Rc::new(|ref mut wm| {
+            wm.group_mut().resize_left();
+            Ok(())
+        })
+    }
+
     /// Moves the focus to the previous window in the current group's stack.
     pub fn focus_previous() -> Command {
         Rc::new(|ref mut wm| {

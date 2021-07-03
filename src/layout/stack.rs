@@ -50,4 +50,12 @@ impl Layout for StackLayout {
         connection.configure_window(focused_id, &geometry);
         connection.enable_window_tracking(focused_id);
     }
+
+    fn resize_right(&mut self, _viewport: &Viewport, _resize_amount: i16) {
+        return;
+    }
+
+    fn resize_left(&mut self, _viewport: &Viewport, _resize_amount: i16) {
+        return;
+    }
 }
