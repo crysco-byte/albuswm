@@ -1,5 +1,10 @@
 use x11::keysym;
 
+// TODO: Parse mask keys definitions (mod_key = "Mod1")
+// TODO: Support multiple arguments when spawning a command
+// TODO: Support configurable resize ammount
+// TODO: Support configurable layout groups
+
 pub mod parser {
     use super::config_file_handler;
     use super::lazy_commands;
@@ -155,52 +160,6 @@ mod lazy_commands {
         }
     }
 }
-
-fn safe_xk_parse(string: &str) -> Result<u32, ()> {
-    match string {
-        "XK_a" => Ok(keysym::XK_a),
-        "XK_b" => Ok(keysym::XK_b),
-        "XK_c" => Ok(keysym::XK_c),
-        "XK_d" => Ok(keysym::XK_d),
-        "XK_e" => Ok(keysym::XK_e),
-        "XK_f" => Ok(keysym::XK_f),
-        "XK_g" => Ok(keysym::XK_g),
-        "XK_h" => Ok(keysym::XK_h),
-        "XK_i" => Ok(keysym::XK_i),
-        "XK_j" => Ok(keysym::XK_j),
-        "XK_k" => Ok(keysym::XK_k),
-        "XK_l" => Ok(keysym::XK_l),
-        "XK_m" => Ok(keysym::XK_m),
-        "XK_n" => Ok(keysym::XK_n),
-        "XK_o" => Ok(keysym::XK_o),
-        "XK_p" => Ok(keysym::XK_p),
-        "XK_q" => Ok(keysym::XK_q),
-        "XK_r" => Ok(keysym::XK_r),
-        "XK_s" => Ok(keysym::XK_s),
-        "XK_t" => Ok(keysym::XK_t),
-        "XK_u" => Ok(keysym::XK_u),
-        "XK_v" => Ok(keysym::XK_v),
-        "XK_w" => Ok(keysym::XK_w),
-        "XK_x" => Ok(keysym::XK_x),
-        "XK_y" => Ok(keysym::XK_y),
-        "XK_z" => Ok(keysym::XK_z),
-        "XK_0" => Ok(keysym::XK_0),
-        "XK_1" => Ok(keysym::XK_1),
-        "XK_2" => Ok(keysym::XK_2),
-        "XK_3" => Ok(keysym::XK_3),
-        "XK_4" => Ok(keysym::XK_4),
-        "XK_5" => Ok(keysym::XK_5),
-        "XK_6" => Ok(keysym::XK_6),
-        "XK_7" => Ok(keysym::XK_7),
-        "XK_8" => Ok(keysym::XK_8),
-        "XK_9" => Ok(keysym::XK_9),
-        "XK_Return" => Ok(keysym::XK_Return),
-        "XK_Tab" => Ok(keysym::XK_Tab),
-        _ => Err(())
-    }
-}
-
-#[allow(dead_code)]
 mod config_file_handler {
     use std::fs;
     use std::io::{Read, Write};
@@ -251,3 +210,50 @@ spawns = [
 ]
     "#;
 }
+
+
+fn safe_xk_parse(string: &str) -> Result<u32, ()> {
+    match string {
+        "XK_a" => Ok(keysym::XK_a),
+        "XK_b" => Ok(keysym::XK_b),
+        "XK_c" => Ok(keysym::XK_c),
+        "XK_d" => Ok(keysym::XK_d),
+        "XK_e" => Ok(keysym::XK_e),
+        "XK_f" => Ok(keysym::XK_f),
+        "XK_g" => Ok(keysym::XK_g),
+        "XK_h" => Ok(keysym::XK_h),
+        "XK_i" => Ok(keysym::XK_i),
+        "XK_j" => Ok(keysym::XK_j),
+        "XK_k" => Ok(keysym::XK_k),
+        "XK_l" => Ok(keysym::XK_l),
+        "XK_m" => Ok(keysym::XK_m),
+        "XK_n" => Ok(keysym::XK_n),
+        "XK_o" => Ok(keysym::XK_o),
+        "XK_p" => Ok(keysym::XK_p),
+        "XK_q" => Ok(keysym::XK_q),
+        "XK_r" => Ok(keysym::XK_r),
+        "XK_s" => Ok(keysym::XK_s),
+        "XK_t" => Ok(keysym::XK_t),
+        "XK_u" => Ok(keysym::XK_u),
+        "XK_v" => Ok(keysym::XK_v),
+        "XK_w" => Ok(keysym::XK_w),
+        "XK_x" => Ok(keysym::XK_x),
+        "XK_y" => Ok(keysym::XK_y),
+        "XK_z" => Ok(keysym::XK_z),
+        "XK_0" => Ok(keysym::XK_0),
+        "XK_1" => Ok(keysym::XK_1),
+        "XK_2" => Ok(keysym::XK_2),
+        "XK_3" => Ok(keysym::XK_3),
+        "XK_4" => Ok(keysym::XK_4),
+        "XK_5" => Ok(keysym::XK_5),
+        "XK_6" => Ok(keysym::XK_6),
+        "XK_7" => Ok(keysym::XK_7),
+        "XK_8" => Ok(keysym::XK_8),
+        "XK_9" => Ok(keysym::XK_9),
+        "XK_Return" => Ok(keysym::XK_Return),
+        "XK_Tab" => Ok(keysym::XK_Tab),
+        _ => Err(())
+    }
+}
+
+

@@ -5,8 +5,6 @@ use std::rc::Rc;
 pub type Command = Rc<dyn Fn(&mut Albus) -> Result<()>>;
 
 /// Lazy-functions which return a `Command` to do the requested action.
-// TODO: Consider offering non-lazy versions and then having simple lazy
-// wrappers for them.
 pub mod lazy {
 
     use std::process;

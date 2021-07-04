@@ -3,25 +3,13 @@ extern crate albuswm;
 
 use albuswm::config_handler;
 use albuswm::layout::*;
-use albuswm::{cmd, Albus, ModKey, Result};
-
-// macro_rules! spawn {
-//     ($cmd:expr) => (::albuswm::cmd::lazy::spawn(::std::process::Command::new($cmd)));
-//     ($cmd:expr, $($arg:expr),*) => {{
-//         let mut command = ::std::process::Command::new($cmd);
-//         $(
-//             command.arg($arg);
-//         )*
-//         ::albuswm::cmd::lazy::spawn(command)
-//     }}
-// }
+use albuswm::{Albus, ModKey, Result};
 
 fn main() -> Result<()> {
     albuswm::intiailize_logger()?;
 
     let modkey = ModKey::Mod1;
     let shift = ModKey::Shift;
-    //let ctrl = ModKey::Control;
 
     #[rustfmt::skip]
     let mut keys = config_handler::parser::get_keys_from_config_file();
