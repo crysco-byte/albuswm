@@ -1,0 +1,119 @@
+
+running 15 tests
+test stack::test::test_focus_next ... ok
+test stack::test::test_focus_previous ... ok
+test stack::test::test_focused ... ok
+test stack::test::test_from ... ok
+test stack::test::test_is_empty ... ok
+test stack::test::test_iter ... ok
+test stack::test::test_push ... ok
+test stack::test::test_len ... ok
+test stack::test::test_remove ... ok
+test stack::test::test_remove_focused ... ok
+test stack::test::test_remove_focused_when_no_focus ... ok
+test stack::test::test_set_get_focus ... ok
+current: Stack { before: [], after: [4, 2, 3] }
+ parsed conf: Config {
+    key_def: KeyDef {
+        mod_key: "Mod1",
+        shift: "Shift",
+    },
+    key_bindings: KeyBindings {
+        close_focused: {
+            "key": [
+                "XK_w",
+            ],
+            "mask": [
+                "mod",
+            ],
+        },
+        focus_next: {
+            "mask": [
+                "mod",
+            ],
+            "key": [
+                "XK_j",
+            ],
+        },
+        focus_prev: {
+            "key": [
+                "XK_k",
+            ],
+            "mask": [
+                "mod",
+            ],
+        },
+        resize_left: {
+            "key": [
+                "XK_h",
+            ],
+            "mask": [
+                "mod",
+            ],
+        },
+        resize_right: {
+            "key": [
+                "XK_l",
+            ],
+            "mask": [
+                "mod",
+            ],
+        },
+        layout_next: {
+            "key": [
+                "XK_Tab",
+            ],
+            "mask": [
+                "mod",
+            ],
+        },
+    },
+    spawn_bindings: SpawnBindings {
+        spawns: [
+            {
+                "mask": [
+                    "mod",
+                ],
+                "command": [
+                    "qutebrowser",
+                ],
+                "key": [
+                    "XK_o",
+                ],
+                "args": [
+                    "",
+                ],
+            },
+            {
+                "key": [
+                    "XK_Return",
+                ],
+                "mask": [
+                    "mod",
+                ],
+                "command": [
+                    "alacritty",
+                ],
+                "args": [
+                    "",
+                ],
+            },
+        ],
+    },
+}
+test stack::test::test_shuffle_next ... ok
+test stack::test::test_shuffle_previous ... ok
+test config::config_handler::test::test_parser ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,7 +1,11 @@
 #![deny(warnings)]
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate strum_macros;
+
 pub mod cmd;
+pub mod config_handler;
 mod groups;
 mod keys;
 pub mod layout;
