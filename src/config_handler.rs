@@ -1,7 +1,6 @@
 use x11::keysym;
 
 // TODO: Parse mask keys definitions (mod_key = "Mod1")
-// TODO: Support multiple arguments when spawning a command
 // TODO: Support configurable resize ammount
 // TODO: Support configurable layout groups
 
@@ -69,7 +68,7 @@ pub mod parser {
         let kb_to_vec = keybindings_to_vec(key_bindings);
         for (i, binding) in kb_to_vec.into_iter().enumerate() {
             let masks = parse_mask_keys(binding["mask"].clone());
-            let xk_key = super::safe_xk_parse(&binding["key"][0].clone()).expect("XK_key not in safe parse range");
+            let xk_key = super::safe_xk_parse(&binding["key"][0].clone()).expect(&format!("{} not in safe parse range", &binding["key"][0].clone()));
             let lazy_command = lazy_commands::get_cmd_based_on_action(
                 &lazy_commands::lookup_actiontypes_by_index(i),
             )
@@ -85,9 +84,8 @@ pub mod parser {
         let mut result: Vec<(Vec<ModKey>, u32, Command)> = Vec::new();
         for data_group in spawn_bindings.spawns {
             let masks = parse_mask_keys(data_group["mask"].clone());
-            let xk_key = super::safe_xk_parse(&data_group["key"][0].clone()).expect("XK_key not in safe parse range");
-            let lazy_command = lazy_commands::lazy_spawn(data_group["command"].clone())
-                .expect("Could not get spawn command");
+            let xk_key = super::safe_xk_parse(&data_group["key"][0].clone()).expect(&format!("{} not in safe parse range", &data_group["key"][0].clone()));
+            let lazy_command = lazy_commands::lazy_spawn(data_group["command"].clone(), data_group["args"].clone());
             result.push((masks, xk_key, lazy_command));
         }
         result
@@ -148,16 +146,8 @@ mod lazy_commands {
         }
     }
 
-    pub fn lazy_spawn(cmd_vec: Vec<String>) -> Result<Command, ()> {
-        if cmd_vec.is_empty() {
-            ()
-        }
-        if cmd_vec.len() < 2 {
-            let command = std::process::Command::new(cmd_vec[0].clone());
-            Ok(cmd::lazy::spawn(command))
-        } else {
-            Err(())
-        }
+    pub fn lazy_spawn(command: Vec<String>, args: Vec<String>) -> Command {
+        cmd::lazy::spawn(command[0].clone(),args)
     }
 }
 mod config_file_handler {
