@@ -176,26 +176,6 @@ impl Group {
         self.perform_layout();
     }
 
-    pub fn shuffle_next(&mut self) {
-        info!(
-            "Shuffling focused window to next position in group {}: {:?}",
-            self.name(),
-            self.stack.focused()
-        );
-        self.stack.shuffle_next();
-        self.perform_layout();
-    }
-
-    pub fn shuffle_previous(&mut self) {
-        info!(
-            "Shuffling focused window to previous position in group {}: {:?}",
-            self.name(),
-            self.stack.focused()
-        );
-        self.stack.shuffle_previous();
-        self.perform_layout();
-    }
-
     pub fn layout_next(&mut self) {
         self.layouts.focus_next();
         info!(

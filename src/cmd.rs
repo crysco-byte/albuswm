@@ -52,24 +52,6 @@ pub mod lazy {
         })
     }
 
-    /// Shuffles the focused window to the next position in the current group's
-    /// stack.
-    pub fn shuffle_next() -> Command {
-        Rc::new(|ref mut wm| {
-            wm.group_mut().shuffle_next();
-            Ok(())
-        })
-    }
-
-    /// Shuffles the focused window to the previous position in the current
-    /// group's stack.
-    pub fn shuffle_previous() -> Command {
-        Rc::new(|ref mut wm| {
-            wm.group_mut().shuffle_previous();
-            Ok(())
-        })
-    }
-
     /// Cycles to the next layout of the current group.
     pub fn layout_next() -> Command {
         Rc::new(|ref mut wm| {
