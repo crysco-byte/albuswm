@@ -82,7 +82,7 @@ pub mod lazy {
     /// The returned `Command` will spawn the `Command` each time it is called.
     pub fn spawn(cmd: String, args: Vec<String>) -> Command {
         let mut command = std::process::Command::new(cmd.clone());
-        if args.len() > 0 && args[0] != ""{
+        if args.len() > 0 && args[0] != "" {
             command.args(args);
         }
         let mutex = Mutex::new(command);

@@ -1,6 +1,5 @@
 use x11::keysym;
 
-// TODO: Parse mask keys definitions (mod_key = "Mod1")
 // TODO: Support configurable resize ammount
 // TODO: Support configurable layout groups
 
@@ -15,15 +14,8 @@ pub mod parser {
 
     #[derive(Deserialize, Debug)]
     pub struct Config {
-        key_def: KeyDef,
         key_bindings: KeyBindings,
         spawn_bindings: SpawnBindings,
-    }
-
-    #[derive(Deserialize, Debug)]
-    pub struct KeyDef {
-        mod_key: String,
-        shift: String,
     }
 
     #[derive(Deserialize, Debug)]
@@ -66,13 +58,15 @@ pub mod parser {
     ) -> Vec<(Vec<ModKey>, u32, Command)> {
         let mut result: Vec<(Vec<ModKey>, u32, Command)> = Vec::new();
         let kb_to_vec = keybindings_to_vec(key_bindings);
-        for (i, binding) in kb_to_vec.into_iter().enumerate() {
-            let masks = parse_mask_keys(binding["mask"].clone());
-            let xk_key = super::safe_xk_parse(&binding["key"][0].clone()).expect(&format!("{} not in safe parse range", &binding["key"][0].clone()));
+        for (i, data_group) in kb_to_vec.into_iter().enumerate() {
+            let masks = parse_mask_keys(data_group["mask"].clone());
+            let xk_key = super::safe_xk_parse(&data_group["key"][0].clone()).expect(&format!(
+                "{} not in safe parse range",
+                &data_group["key"][0].clone()
+            ));
             let lazy_command = lazy_commands::get_cmd_based_on_action(
                 &lazy_commands::lookup_actiontypes_by_index(i),
-            )
-            .unwrap();
+            );
             result.push((masks, xk_key, lazy_command));
         }
         result
@@ -84,8 +78,14 @@ pub mod parser {
         let mut result: Vec<(Vec<ModKey>, u32, Command)> = Vec::new();
         for data_group in spawn_bindings.spawns {
             let masks = parse_mask_keys(data_group["mask"].clone());
-            let xk_key = super::safe_xk_parse(&data_group["key"][0].clone()).expect(&format!("{} not in safe parse range", &data_group["key"][0].clone()));
-            let lazy_command = lazy_commands::lazy_spawn(data_group["command"].clone(), data_group["args"].clone());
+            let xk_key = super::safe_xk_parse(&data_group["key"][0].clone()).expect(&format!(
+                "{} not in safe parse range",
+                &data_group["key"][0].clone()
+            ));
+            let lazy_command = lazy_commands::lazy_spawn(
+                data_group["command"].clone(),
+                data_group["args"].clone(),
+            );
             result.push((masks, xk_key, lazy_command));
         }
         result
@@ -109,7 +109,6 @@ pub mod parser {
         }
         result
     }
-
 }
 
 mod lazy_commands {
@@ -135,19 +134,19 @@ mod lazy_commands {
         }
     }
 
-    pub fn get_cmd_based_on_action(action: &ActionTypes) -> std::result::Result<Command, ()> {
+    pub fn get_cmd_based_on_action(action: &ActionTypes) -> Command {
         match action {
-            ActionTypes::CloseFocused => Ok(cmd::lazy::close_focused_window()),
-            ActionTypes::FocusNext => Ok(cmd::lazy::focus_next()),
-            ActionTypes::FocusPrev => Ok(cmd::lazy::focus_previous()),
-            ActionTypes::ResizeRight => Ok(cmd::lazy::resize_right()),
-            ActionTypes::ResizeLeft => Ok(cmd::lazy::resize_left()),
-            ActionTypes::LayoutNext => Ok(cmd::lazy::layout_next()),
+            ActionTypes::CloseFocused => cmd::lazy::close_focused_window(),
+            ActionTypes::FocusNext => cmd::lazy::focus_next(),
+            ActionTypes::FocusPrev => cmd::lazy::focus_previous(),
+            ActionTypes::ResizeRight => cmd::lazy::resize_right(),
+            ActionTypes::ResizeLeft => cmd::lazy::resize_left(),
+            ActionTypes::LayoutNext => cmd::lazy::layout_next(),
         }
     }
 
     pub fn lazy_spawn(command: Vec<String>, args: Vec<String>) -> Command {
-        cmd::lazy::spawn(command[0].clone(),args)
+        cmd::lazy::spawn(command[0].clone(), args)
     }
 }
 mod config_file_handler {
@@ -181,10 +180,6 @@ mod config_file_handler {
     }
 
     static DEFAULT_CONFIG: &str = r#"
-[key_def]
-mod_key = "Mod1"
-shift = "Shift"
-
 [key_bindings]
 close_focused = {mask=["mod"], key=["XK_w"]}
 focus_next = {mask=["mod"], key=["XK_j"]}
@@ -200,7 +195,6 @@ spawns = [
 ]
     "#;
 }
-
 
 fn safe_xk_parse(string: &str) -> Result<u32, ()> {
     match string {
@@ -242,8 +236,6 @@ fn safe_xk_parse(string: &str) -> Result<u32, ()> {
         "XK_9" => Ok(keysym::XK_9),
         "XK_Return" => Ok(keysym::XK_Return),
         "XK_Tab" => Ok(keysym::XK_Tab),
-        _ => Err(())
+        _ => Err(()),
     }
 }
-
-
