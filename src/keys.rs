@@ -4,7 +4,6 @@ use std::os::raw::c_uint;
 use crate::cmd::Command;
 
 /// Represents a modifier key.
-#[allow(dead_code)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, EnumString)]
 pub enum ModKey {
     Shift,
