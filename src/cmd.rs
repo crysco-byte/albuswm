@@ -5,11 +5,8 @@ use std::rc::Rc;
 pub type Command = Rc<dyn Fn(&mut Albus) -> Result<()>>;
 
 /// Lazy-functions which return a `Command` to do the requested action.
-// TODO: Consider offering non-lazy versions and then having simple lazy
-// wrappers for them.
 pub mod lazy {
 
-    use std::process;
     use std::rc::Rc;
     use std::sync::Mutex;
 
@@ -55,24 +52,6 @@ pub mod lazy {
         })
     }
 
-    /// Shuffles the focused window to the next position in the current group's
-    /// stack.
-    pub fn shuffle_next() -> Command {
-        Rc::new(|ref mut wm| {
-            wm.group_mut().shuffle_next();
-            Ok(())
-        })
-    }
-
-    /// Shuffles the focused window to the previous position in the current
-    /// group's stack.
-    pub fn shuffle_previous() -> Command {
-        Rc::new(|ref mut wm| {
-            wm.group_mut().shuffle_previous();
-            Ok(())
-        })
-    }
-
     /// Cycles to the next layout of the current group.
     pub fn layout_next() -> Command {
         Rc::new(|ref mut wm| {
@@ -83,11 +62,14 @@ pub mod lazy {
 
     /// Spawns the specified command.
     /// The returned `Command` will spawn the `Command` each time it is called.
-    pub fn spawn(command: process::Command) -> Command {
+    pub fn spawn(cmd: String, args: Vec<String>) -> Command {
+        let mut command = std::process::Command::new(cmd.clone());
+        if args.len() > 0 && args[0] != "" {
+            command.args(args);
+        }
         let mutex = Mutex::new(command);
         Rc::new(move |_| {
             let mut command = mutex.lock().unwrap();
-            info!("Spawning: {:?}", *command);
             command
                 .spawn()
                 .with_context(|_| format!("Could not spawn command: {:?}", *command))?;
@@ -96,17 +78,17 @@ pub mod lazy {
     }
 
     /// Switches to the group specified by name.
-    pub fn switch_group(name: &'static str) -> Command {
+    pub fn switch_group(name: String) -> Command {
         Rc::new(move |wm| {
-            wm.switch_group(name);
+            wm.switch_group(name.clone());
             Ok(())
         })
     }
 
     /// Moves the focused window on the active group to another group.
-    pub fn move_window_to_group(name: &'static str) -> Command {
+    pub fn move_window_to_group(name: String) -> Command {
         Rc::new(move |wm| {
-            wm.move_focused_to_group(name);
+            wm.move_focused_to_group(name.clone());
             Ok(())
         })
     }

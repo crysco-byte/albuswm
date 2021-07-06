@@ -1,13 +1,19 @@
 #![deny(warnings)]
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate strum_macros;
+
 pub mod cmd;
+pub mod config_handler;
 mod groups;
 mod keys;
 pub mod layout;
 pub mod screen;
 mod stack;
 mod x;
+use cmd::Command;
+
 pub use crate::{groups::GroupBuilder, keys::ModKey, screen::Screen, stack::Stack};
 use {
     crate::x::{Connection, StrutPartial, WindowId},
@@ -56,41 +62,40 @@ pub fn intiailize_logger() -> Result<()> {
     Ok(())
 }
 
-#[macro_export]
-macro_rules! keys {
-    [ $( ([$( $mod:ident ),*], $key:ident, $cmd:expr) ),+ $(,)*] => (
-        vec![
-            $( (vec![$( $mod ),*],  $crate::keysym::$key, $cmd) ),+
-        ]
-    )
+pub fn gen_groups(
+    keys: Vec<(Vec<ModKey>, u32, Command)>,
+    groupdef: Vec<(ModKey, u32, String, String)>,
+) -> (Vec<(Vec<ModKey>, u32, Command)>, Vec<GroupBuilder>) {
+    let mut additional_keys = Vec::new();
+    let mut groups = Vec::new();
+    for item in groupdef {
+        let (mask, key, group_name, layout_name) = (item.0, item.1, item.2.clone(), item.3);
+        additional_keys.push(gen_move_window_to_group_keys!(mask, key, group_name));
+        additional_keys.push(gen_switch_group_keys!(mask, key, group_name));
+        groups.push(GroupBuilder::new(item.2, layout_name))
+    }
+    additional_keys.extend(keys);
+    (additional_keys, groups)
 }
-
 #[macro_export]
-macro_rules! groups {
+macro_rules! gen_move_window_to_group_keys {
     {
-        $keys:ident,
-        $movemodkey:ident,
-        [
-            $(( [$( $modkey:ident ),+], $key:ident, $name:expr, $layout:expr )),+
-            $(,)*
-        ]
-    }  => {{
-        $keys.extend(keys![
-            // Switch to group:
-            $(
-                ([$($modkey),+], $key, $crate::cmd::lazy::switch_group($name))
-            ),+,
-            // Move window to group:
-            $(
-                ([$($modkey),+, $movemodkey], $key,  $crate::cmd::lazy::move_window_to_group($name))
-            ),+
-        ]);
-        vec![
-            $(
-                 $crate::GroupBuilder::new($name, $layout)
-            ),+
-        ]
-    }}
+        $mask:ident,
+        $xk_key:ident,
+        $group_name:ident
+    } => {
+        (vec![$mask, ModKey::Shift], $xk_key, $crate::cmd::lazy::move_window_to_group($group_name.clone()))
+    }
+}
+#[macro_export]
+macro_rules! gen_switch_group_keys {
+    {
+        $mask:ident,
+        $xk_key:ident,
+        $group_name:ident
+    } => {
+        (vec![$mask], $xk_key, $crate::cmd::lazy::switch_group($group_name))
+    }
 }
 
 #[macro_export]
@@ -175,12 +180,7 @@ impl Albus {
             .expect("Invariant: No active group!")
     }
 
-    pub fn switch_group<'a, S>(&'a mut self, name: S)
-    where
-        S: Into<&'a str>,
-    {
-        let name = name.into();
-
+    pub fn switch_group<'a>(&'a mut self, name: String) {
         // If we're already on this group, do nothing.
         if self.group().name() == name {
             return;
@@ -197,18 +197,12 @@ impl Albus {
     ///
     /// If the other named group does not exist, then the window is
     /// (unfortunately) lost.
-    pub fn move_focused_to_group<'a, S>(&'a mut self, name: S)
-    where
-        S: Into<&'a str>,
-    {
-        let name = name.into();
-
+    pub fn move_focused_to_group<'a>(&'a mut self, name: String) {
         // If the group is currently active, then do nothing. This avoids flicker as we
         // unmap/remap.
         if name == self.group().name() {
             return;
         }
-
         if let Some(removed) = self.group_mut().remove_focused() {
             let new_group = self.groups.iter_mut().find(|group| group.name() == name);
             match new_group {

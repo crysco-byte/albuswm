@@ -9,13 +9,10 @@ use std::mem::swap;
 /// The order of the stack and the pointer to the focused element can be moved
 /// independently:
 ///
-/// - [`shuffle_next()`]/[`shuffle_previous()`] can be used to change
 ///   the order of the elements in the stack.
 /// - [`focus_next()`]/[`focus_previous()`]
 ///   can be used to change the focused element, without affecting ordering.
 ///
-/// [`shuffle_next()`]: #method.shuffle_next
-/// [`shuffle_previous()`]: #method.shuffle_previous
 /// [`focus_next()`]: #method.focus_next
 /// [`focus_previous()`]: #method.focus_previous
 #[derive(Clone, Debug, PartialEq)]
@@ -150,28 +147,6 @@ impl<T> Stack<T> {
         }
         if let Some(elem) = self.before.pop_back() {
             self.after.push_front(elem);
-        }
-    }
-
-    /// Inserts the currently focused element after the next element.
-    pub fn shuffle_next(&mut self) {
-        if self.len() < 2 {
-            return;
-        }
-        if self.after.len() > 1 {
-            self.before.push_back(self.after.remove(1).unwrap());
-        } else if self.after.len() == 1 && !self.before.is_empty() {
-            self.before.push_front(self.after.pop_front().unwrap());
-            swap(&mut self.after, &mut self.before);
-        }
-    }
-
-    /// Inserts the currently focused element before the previous element.
-    pub fn shuffle_previous(&mut self) {
-        if !self.after.is_empty() && !self.before.is_empty() {
-            self.after.insert(1, self.before.pop_back().unwrap());
-        } else if !self.after.is_empty() {
-            self.before.extend(self.after.drain(1..));
         }
     }
 }
@@ -371,40 +346,5 @@ mod test {
         stack.focus_previous();
         assert_eq!(stack.focused(), Some(&1));
         assert_eq!(stack, vec);
-    }
-
-    #[test]
-    fn test_shuffle_next() {
-        let mut stack = Stack::<u8>::new();
-        stack.push(2);
-        stack.push(3);
-        stack.push(4);
-        assert_eq!(stack.focused(), Some(&4));
-
-        assert_eq!(stack, vec![2, 3, 4]);
-        stack.shuffle_next();
-        assert_eq!(stack, vec![4, 2, 3]);
-        stack.shuffle_next();
-        assert_eq!(stack, vec![2, 4, 3]);
-        stack.shuffle_next();
-        assert_eq!(stack, vec![2, 3, 4]);
-    }
-
-    #[test]
-    fn test_shuffle_previous() {
-        let mut stack = Stack::<u8>::new();
-        stack.push(2);
-        stack.push(3);
-        stack.push(4);
-        assert_eq!(stack.focused(), Some(&4));
-
-        assert_eq!(stack, vec![2, 3, 4]);
-        stack.shuffle_previous();
-        assert_eq!(stack, vec![2, 4, 3]);
-        stack.shuffle_previous();
-        assert_eq!(stack, vec![4, 2, 3]);
-        println!("current: {:?}", stack);
-        stack.shuffle_previous();
-        assert_eq!(stack, vec![2, 3, 4]);
     }
 }

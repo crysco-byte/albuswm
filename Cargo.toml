@@ -1,6 +1,6 @@
 [package]
 name = "albuswm"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2018"
 
 [[bin]]
@@ -18,3 +18,8 @@ x11 = "2.18"
 xcb = "0.8"
 xcb-util = { version = "0.2", features = ["ewmh", "icccm", "keysyms"] }
 xdg = "2.2"
+serde = {version = "1.0.117", features = ["derive"]}
+toml = "0.5.8"
+strum_macros = "0.21"
+strum = "0.21"
+
