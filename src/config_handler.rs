@@ -9,10 +9,10 @@ pub mod parser {
     type LayoutName = String;
     type GroupName = String;
     pub type XKeyValue = u32;
-    type BindedCommand = (Vec<ModKey>, XKeyValue, Command);
-    type BindedGroup = (ModKey, XKeyValue, GroupName, LayoutName);
+    type BoundCommand = (Vec<ModKey>, XKeyValue, Command);
+    type BoundGroup = (ModKey, XKeyValue, GroupName, LayoutName);
 
-    pub fn get_keys_from_config_file() -> Vec<BindedCommand> {
+    pub fn get_keys_from_config_file() -> Vec<BoundCommand> {
         null_check_config();
         let config = config_file_handler::read_config_file();
         let deserialized_config: config_deserializer::Config =
@@ -20,7 +20,7 @@ pub mod parser {
         get_parsed_keys(deserialized_config)
     }
 
-    pub fn get_parsed_group_definitions() -> Vec<BindedGroup> {
+    pub fn get_parsed_group_definitions() -> Vec<BoundGroup> {
         null_check_config();
         let config = config_file_handler::read_config_file();
         let deserialized_config: config_deserializer::GroupDefinition =
@@ -37,7 +37,7 @@ pub mod parser {
         result
     }
 
-    fn parse_group_def_types(data_group: HashMap<String, String>) -> Result<BindedGroup, ()> {
+    fn parse_group_def_types(data_group: HashMap<String, String>) -> Result<BoundGroup, ()> {
         let mask = key_parse::parse_mask_keys(vec![data_group["mask"].clone()])[0];
         let xk_key = safe_xk_parse(&data_group["key"])?;
         Ok((
@@ -54,7 +54,7 @@ pub mod parser {
         }
     }
 
-    fn get_parsed_keys(parsed_config: config_deserializer::Config) -> Vec<BindedCommand> {
+    fn get_parsed_keys(parsed_config: config_deserializer::Config) -> Vec<BoundCommand> {
         let mut key_bindings = parse_keybinding_str_keys_to_types(parsed_config.key_bindings);
         let spawn_bindings = parse_spawn_bindings_str_keys_to_types(parsed_config.spawn_bindings);
         key_bindings.extend(spawn_bindings);
@@ -63,8 +63,8 @@ pub mod parser {
 
     fn parse_keybinding_str_keys_to_types(
         key_bindings: config_deserializer::KeyBindingDefinition,
-    ) -> Vec<BindedCommand> {
-        let mut result: Vec<BindedCommand> = Vec::new();
+    ) -> Vec<BoundCommand> {
+        let mut result: Vec<BoundCommand> = Vec::new();
         let kb_to_vec = keybindings_to_vec(key_bindings);
         for (i, data_group) in kb_to_vec.into_iter().enumerate() {
             if let Ok(parsed_mask_and_key) = key_parse::parse_mask_and_key(
@@ -85,8 +85,8 @@ pub mod parser {
 
     fn parse_spawn_bindings_str_keys_to_types(
         spawn_bindings: config_deserializer::SpawnBindingDefinition,
-    ) -> Vec<BindedCommand> {
-        let mut result: Vec<BindedCommand> = Vec::new();
+    ) -> Vec<BoundCommand> {
+        let mut result: Vec<BoundCommand> = Vec::new();
         for data_group in spawn_bindings.spawns {
             if let Ok(parsed_mask_and_key) = key_parse::parse_mask_and_key(
                 data_group["mask"].clone(),
