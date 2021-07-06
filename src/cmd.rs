@@ -78,17 +78,17 @@ pub mod lazy {
     }
 
     /// Switches to the group specified by name.
-    pub fn switch_group(name: &'static str) -> Command {
+    pub fn switch_group(name: String) -> Command {
         Rc::new(move |wm| {
-            wm.switch_group(name);
+            wm.switch_group(name.clone());
             Ok(())
         })
     }
 
     /// Moves the focused window on the active group to another group.
-    pub fn move_window_to_group(name: &'static str) -> Command {
+    pub fn move_window_to_group(name: String) -> Command {
         Rc::new(move |wm| {
-            wm.move_focused_to_group(name);
+            wm.move_focused_to_group(name.clone());
             Ok(())
         })
     }

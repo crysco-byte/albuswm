@@ -1,49 +1,54 @@
 use x11::keysym;
 
-// TODO: Support configurable resize ammount
-// TODO: Support configurable layout groups
-
 pub mod parser {
-    use super::config_file_handler;
+    use super::config_deserializer::*;
+    use super::config_file_handler::*;
+    use super::key_parse::*;
     use super::lazy_commands;
     use crate::cmd::Command;
     use crate::ModKey;
-    use serde::Deserialize;
     use std::collections::HashMap;
-    use std::str::FromStr;
-
-    #[derive(Deserialize, Debug)]
-    pub struct Config {
-        key_bindings: KeyBindings,
-        spawn_bindings: SpawnBindings,
-    }
-
-    #[derive(Deserialize, Debug)]
-    pub struct KeyBindings {
-        close_focused: HashMap<String, Vec<String>>,
-        focus_next: HashMap<String, Vec<String>>,
-        focus_prev: HashMap<String, Vec<String>>,
-        resize_left: HashMap<String, Vec<String>>,
-        resize_right: HashMap<String, Vec<String>>,
-        layout_next: HashMap<String, Vec<String>>,
-    }
-
-    #[derive(Deserialize, Debug)]
-    pub struct SpawnBindings {
-        spawns: Vec<HashMap<String, Vec<String>>>,
-    }
 
     pub fn get_keys_from_config_file() -> Vec<(Vec<ModKey>, u32, Command)> {
-        if !config_file_handler::config_file_exists() {
-            config_file_handler::create_default_config_file();
-        }
-        let config = config_file_handler::read_config_file();
+        null_check_config();
+        let config = read_config_file();
         let deserialized_config: Config = deserialize_config(config);
         get_parsed_keys(deserialized_config)
     }
 
-    fn deserialize_config(config_file: String) -> Config {
-        toml::from_str(&config_file).expect("Could not parse config file")
+    pub fn get_parsed_group_definitions() -> Vec<(ModKey, u32, String, String)> {
+        null_check_config();
+        let config = read_config_file();
+        let deserialized_config: GroupDef = deserialize_config(config).group_definitions;
+        let mut result = Vec::new();
+        for data_group in deserialized_config.groups {
+            if let Ok(parsed) = parse_group_def_types(data_group.clone()) {
+                result.push(parsed);
+            } else {
+                error!("Could not group definitions: {:?}", data_group);
+                continue;
+            }
+        }
+        result
+    }
+
+    fn parse_group_def_types(
+        data_group: HashMap<String, String>,
+    ) -> Result<(ModKey, u32, String, String), ()> {
+        let mask = parse_mask_keys(vec![data_group["mask"].clone()])[0];
+        let xk_key = safe_xk_parse(&data_group["key"])?;
+        Ok((
+            mask,
+            xk_key,
+            data_group["name"].clone(),
+            data_group["layout"].clone(),
+        ))
+    }
+
+    fn null_check_config() {
+        if !config_file_exists() {
+            create_default_config_file();
+        }
     }
 
     fn get_parsed_keys(parsed_config: Config) -> Vec<(Vec<ModKey>, u32, Command)> {
@@ -59,15 +64,17 @@ pub mod parser {
         let mut result: Vec<(Vec<ModKey>, u32, Command)> = Vec::new();
         let kb_to_vec = keybindings_to_vec(key_bindings);
         for (i, data_group) in kb_to_vec.into_iter().enumerate() {
-            let masks = parse_mask_keys(data_group["mask"].clone());
-            let xk_key = super::safe_xk_parse(&data_group["key"][0].clone()).expect(&format!(
-                "{} not in safe parse range",
-                &data_group["key"][0].clone()
-            ));
-            let lazy_command = lazy_commands::get_cmd_based_on_action(
-                &lazy_commands::lookup_actiontypes_by_index(i),
-            );
-            result.push((masks, xk_key, lazy_command));
+            if let Ok(parsed_mask_and_key) =
+                parse_mask_and_key(data_group["mask"].clone(), data_group["key"][0].clone())
+            {
+                let lazy_command = lazy_commands::get_cmd_based_on_action(
+                    &lazy_commands::lookup_actiontypes_by_index(i),
+                );
+                result.push((parsed_mask_and_key.0, parsed_mask_and_key.1, lazy_command));
+            } else {
+                error!("Could not parse: {:?}", data_group);
+                continue;
+            }
         }
         result
     }
@@ -77,16 +84,18 @@ pub mod parser {
     ) -> Vec<(Vec<ModKey>, u32, Command)> {
         let mut result: Vec<(Vec<ModKey>, u32, Command)> = Vec::new();
         for data_group in spawn_bindings.spawns {
-            let masks = parse_mask_keys(data_group["mask"].clone());
-            let xk_key = super::safe_xk_parse(&data_group["key"][0].clone()).expect(&format!(
-                "{} not in safe parse range",
-                &data_group["key"][0].clone()
-            ));
-            let lazy_command = lazy_commands::lazy_spawn(
-                data_group["command"].clone(),
-                data_group["args"].clone(),
-            );
-            result.push((masks, xk_key, lazy_command));
+            if let Ok(parsed_mask_and_key) =
+                parse_mask_and_key(data_group["mask"].clone(), data_group["key"][0].clone())
+            {
+                let lazy_command = lazy_commands::lazy_spawn(
+                    data_group["command"].clone(),
+                    data_group["args"].clone(),
+                );
+                result.push((parsed_mask_and_key.0, parsed_mask_and_key.1, lazy_command));
+            } else {
+                error!("Could not parse {:?}", data_group);
+                continue;
+            }
         }
         result
     }
@@ -101,13 +110,58 @@ pub mod parser {
             kb.layout_next,
         ]
     }
+}
 
-    fn parse_mask_keys(masks: Vec<String>) -> Vec<ModKey> {
+mod key_parse {
+    pub use super::safe_xk_parse;
+    use crate::ModKey;
+    use std::str::FromStr;
+
+    pub fn parse_mask_and_key(mask: Vec<String>, xk_key: String) -> Result<(Vec<ModKey>, u32), ()> {
+        Ok((parse_mask_keys(mask), safe_xk_parse(&xk_key)?))
+    }
+
+    pub fn parse_mask_keys(masks: Vec<String>) -> Vec<ModKey> {
         let mut result: Vec<ModKey> = Vec::new();
         for key in masks {
             result.push(ModKey::from_str(&key).expect("Could not parse mask keys"));
         }
         result
+    }
+}
+
+mod config_deserializer {
+    use serde::Deserialize;
+    use std::collections::HashMap;
+    #[derive(Deserialize, Debug)]
+    pub struct Config {
+        pub key_bindings: KeyBindings,
+        pub spawn_bindings: SpawnBindings,
+        pub group_definitions: GroupDef,
+    }
+
+    #[derive(Deserialize, Debug)]
+    pub struct GroupDef {
+        pub groups: Vec<HashMap<String, String>>,
+    }
+
+    #[derive(Deserialize, Debug)]
+    pub struct KeyBindings {
+        pub close_focused: HashMap<String, Vec<String>>,
+        pub focus_next: HashMap<String, Vec<String>>,
+        pub focus_prev: HashMap<String, Vec<String>>,
+        pub resize_left: HashMap<String, Vec<String>>,
+        pub resize_right: HashMap<String, Vec<String>>,
+        pub layout_next: HashMap<String, Vec<String>>,
+    }
+
+    #[derive(Deserialize, Debug)]
+    pub struct SpawnBindings {
+        pub spawns: Vec<HashMap<String, Vec<String>>>,
+    }
+
+    pub fn deserialize_config(config_file: String) -> Config {
+        toml::from_str(&config_file).expect("Could not parse config file")
     }
 }
 
@@ -149,6 +203,7 @@ mod lazy_commands {
         cmd::lazy::spawn(command[0].clone(), args)
     }
 }
+
 mod config_file_handler {
     use std::fs;
     use std::io::{Read, Write};
@@ -181,22 +236,32 @@ mod config_file_handler {
 
     static DEFAULT_CONFIG: &str = r#"
 [key_bindings]
-close_focused = {mask=["mod"], key=["XK_w"]}
-focus_next = {mask=["mod"], key=["XK_j"]}
-focus_prev = {mask=["mod"], key=["XK_k"]}
-resize_left = {mask=["mod"], key=["XK_h"]}
-resize_right = {mask=["mod"], key=["XK_l"]}
-layout_next = {mask=["mod"], key=["XK_Tab"]}
+close_focused = {mask=["Mod1"], key=["XK_w"]}
+focus_next = {mask=["Mod1"], key=["XK_j"]}
+focus_prev = {mask=["Mod1"], key=["XK_k"]}
+resize_left = {mask=["Mod1"], key=["XK_h"]}
+resize_right = {mask=["Mod1"], key=["XK_l"]}
+layout_next = {mask=["Mod1"], key=["XK_Tab"]}
 
 [spawn_bindings]
 spawns = [
-{command=["qutebrowser"], args=[""], mask=["mod"], key=["XK_o"]},
-{command=["alacritty"], args=[""], mask=["mod"], key=["XK_Return"]},
+{command=["pkill"], args=["Xorg"], mask=["Mod1"], key=["XK_q"]},
+{command=["qutebrowser"], args=[""], mask=["Mod1"], key=["XK_o"]},
+{command=["alacritty"], args=[""], mask=["Mod1"], key=["XK_Return"]},
+{command=["rofi"], args=["-combi-modi", "drun, run, ssh", "-theme", "slate", "-show", "combi", "-icon-theme", "Papirus", "-show-icons"], mask=["Mod1"], key=["XK_p"]}
+]
+
+[group_definitions]
+groups = [
+    {mask = "Mod1", key="XK_a", name="alpha", layout="tile"},
+    {mask = "Mod1", key="XK_s", name="beta", layout="tile"},
+    {mask = "Mod1", key="XK_d", name="gamma", layout="tile"},
+    {mask = "Mod1", key="XK_f", name="delta", layout="tile"},
 ]
     "#;
 }
 
-fn safe_xk_parse(string: &str) -> Result<u32, ()> {
+pub fn safe_xk_parse(string: &str) -> Result<u32, ()> {
     match string {
         "XK_a" => Ok(keysym::XK_a),
         "XK_b" => Ok(keysym::XK_b),

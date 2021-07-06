@@ -1,18 +1,15 @@
 #[macro_use]
 extern crate albuswm;
 
-use albuswm::config_handler;
 use albuswm::layout::*;
-use albuswm::{Albus, ModKey, Result};
+use albuswm::{config_handler, gen_groups, Albus, Result};
 
 fn main() -> Result<()> {
     albuswm::intiailize_logger()?;
 
-    let modkey = ModKey::Mod1;
-    let shift = ModKey::Shift;
-
     #[rustfmt::skip]
-    let mut keys = config_handler::parser::get_keys_from_config_file();
+    let keys = config_handler::parser::get_keys_from_config_file();
+    let group_defs = config_handler::parser::get_parsed_group_definitions();
 
     let padding = 20;
     let layouts = layouts![
@@ -21,18 +18,9 @@ fn main() -> Result<()> {
         StackLayout::new("stack", 0),
     ];
 
-    let groups = groups! {
-        keys,
-        shift,
-        [
-            ([modkey], XK_a, "alpha", "stack"),
-            ([modkey], XK_s, "beta",  "stack"),
-            ([modkey], XK_d, "gamma", "stack"),
-            ([modkey], XK_f, "delta", "stack"),
-        ]
-    };
+    let (keys_with_group_bindings, groups) = gen_groups(keys, group_defs);
 
-    Albus::new(keys, groups, &layouts)?.run();
+    Albus::new(keys_with_group_bindings, groups, &layouts)?.run();
 
     Ok(())
 }
