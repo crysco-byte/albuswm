@@ -1,25 +1,30 @@
 use x11::keysym;
 
 pub mod parser {
-    use super::config_deserializer::*;
-    use super::config_file_handler::*;
-    use super::key_parse::*;
     use super::lazy_commands;
+    use super::*;
     use crate::cmd::Command;
     use crate::ModKey;
     use std::collections::HashMap;
+    type LayoutName = String;
+    type GroupName = String;
+    pub type XKeyValue = u32;
+    type BindedCommand = (Vec<ModKey>, XKeyValue, Command);
+    type BindedGroup = (ModKey, XKeyValue, GroupName, LayoutName);
 
-    pub fn get_keys_from_config_file() -> Vec<(Vec<ModKey>, u32, Command)> {
+    pub fn get_keys_from_config_file() -> Vec<BindedCommand> {
         null_check_config();
-        let config = read_config_file();
-        let deserialized_config: Config = deserialize_config(config);
+        let config = config_file_handler::read_config_file();
+        let deserialized_config: config_deserializer::Config =
+            config_deserializer::deserialize_config(config);
         get_parsed_keys(deserialized_config)
     }
 
-    pub fn get_parsed_group_definitions() -> Vec<(ModKey, u32, String, String)> {
+    pub fn get_parsed_group_definitions() -> Vec<BindedGroup> {
         null_check_config();
-        let config = read_config_file();
-        let deserialized_config: GroupDef = deserialize_config(config).group_definitions;
+        let config = config_file_handler::read_config_file();
+        let deserialized_config: config_deserializer::GroupDefinition =
+            config_deserializer::deserialize_config(config).group_definitions;
         let mut result = Vec::new();
         for data_group in deserialized_config.groups {
             if let Ok(parsed) = parse_group_def_types(data_group.clone()) {
@@ -32,10 +37,8 @@ pub mod parser {
         result
     }
 
-    fn parse_group_def_types(
-        data_group: HashMap<String, String>,
-    ) -> Result<(ModKey, u32, String, String), ()> {
-        let mask = parse_mask_keys(vec![data_group["mask"].clone()])[0];
+    fn parse_group_def_types(data_group: HashMap<String, String>) -> Result<BindedGroup, ()> {
+        let mask = key_parse::parse_mask_keys(vec![data_group["mask"].clone()])[0];
         let xk_key = safe_xk_parse(&data_group["key"])?;
         Ok((
             mask,
@@ -46,12 +49,12 @@ pub mod parser {
     }
 
     fn null_check_config() {
-        if !config_file_exists() {
-            create_default_config_file();
+        if !config_file_handler::config_file_exists() {
+            config_file_handler::create_default_config_file();
         }
     }
 
-    fn get_parsed_keys(parsed_config: Config) -> Vec<(Vec<ModKey>, u32, Command)> {
+    fn get_parsed_keys(parsed_config: config_deserializer::Config) -> Vec<BindedCommand> {
         let mut key_bindings = parse_keybinding_str_keys_to_types(parsed_config.key_bindings);
         let spawn_bindings = parse_spawn_bindings_str_keys_to_types(parsed_config.spawn_bindings);
         key_bindings.extend(spawn_bindings);
@@ -59,14 +62,15 @@ pub mod parser {
     }
 
     fn parse_keybinding_str_keys_to_types(
-        key_bindings: KeyBindings,
-    ) -> Vec<(Vec<ModKey>, u32, Command)> {
-        let mut result: Vec<(Vec<ModKey>, u32, Command)> = Vec::new();
+        key_bindings: config_deserializer::KeyBindingDefinition,
+    ) -> Vec<BindedCommand> {
+        let mut result: Vec<BindedCommand> = Vec::new();
         let kb_to_vec = keybindings_to_vec(key_bindings);
         for (i, data_group) in kb_to_vec.into_iter().enumerate() {
-            if let Ok(parsed_mask_and_key) =
-                parse_mask_and_key(data_group["mask"].clone(), data_group["key"][0].clone())
-            {
+            if let Ok(parsed_mask_and_key) = key_parse::parse_mask_and_key(
+                data_group["mask"].clone(),
+                data_group["key"][0].clone(),
+            ) {
                 let lazy_command = lazy_commands::get_cmd_based_on_action(
                     &lazy_commands::lookup_actiontypes_by_index(i),
                 );
@@ -80,13 +84,14 @@ pub mod parser {
     }
 
     fn parse_spawn_bindings_str_keys_to_types(
-        spawn_bindings: SpawnBindings,
-    ) -> Vec<(Vec<ModKey>, u32, Command)> {
-        let mut result: Vec<(Vec<ModKey>, u32, Command)> = Vec::new();
+        spawn_bindings: config_deserializer::SpawnBindingDefinition,
+    ) -> Vec<BindedCommand> {
+        let mut result: Vec<BindedCommand> = Vec::new();
         for data_group in spawn_bindings.spawns {
-            if let Ok(parsed_mask_and_key) =
-                parse_mask_and_key(data_group["mask"].clone(), data_group["key"][0].clone())
-            {
+            if let Ok(parsed_mask_and_key) = key_parse::parse_mask_and_key(
+                data_group["mask"].clone(),
+                data_group["key"][0].clone(),
+            ) {
                 let lazy_command = lazy_commands::lazy_spawn(
                     data_group["command"].clone(),
                     data_group["args"].clone(),
@@ -100,7 +105,9 @@ pub mod parser {
         result
     }
 
-    fn keybindings_to_vec(kb: KeyBindings) -> Vec<HashMap<String, Vec<String>>> {
+    fn keybindings_to_vec(
+        kb: config_deserializer::KeyBindingDefinition,
+    ) -> Vec<HashMap<String, Vec<String>>> {
         vec![
             kb.close_focused,
             kb.focus_next,
@@ -113,11 +120,14 @@ pub mod parser {
 }
 
 mod key_parse {
-    pub use super::safe_xk_parse;
+    pub use super::*;
     use crate::ModKey;
     use std::str::FromStr;
 
-    pub fn parse_mask_and_key(mask: Vec<String>, xk_key: String) -> Result<(Vec<ModKey>, u32), ()> {
+    pub fn parse_mask_and_key(
+        mask: Vec<String>,
+        xk_key: String,
+    ) -> Result<(Vec<ModKey>, parser::XKeyValue), ()> {
         Ok((parse_mask_keys(mask), safe_xk_parse(&xk_key)?))
     }
 
@@ -135,18 +145,18 @@ mod config_deserializer {
     use std::collections::HashMap;
     #[derive(Deserialize, Debug)]
     pub struct Config {
-        pub key_bindings: KeyBindings,
-        pub spawn_bindings: SpawnBindings,
-        pub group_definitions: GroupDef,
+        pub key_bindings: KeyBindingDefinition,
+        pub spawn_bindings: SpawnBindingDefinition,
+        pub group_definitions: GroupDefinition,
     }
 
     #[derive(Deserialize, Debug)]
-    pub struct GroupDef {
+    pub struct GroupDefinition {
         pub groups: Vec<HashMap<String, String>>,
     }
 
     #[derive(Deserialize, Debug)]
-    pub struct KeyBindings {
+    pub struct KeyBindingDefinition {
         pub close_focused: HashMap<String, Vec<String>>,
         pub focus_next: HashMap<String, Vec<String>>,
         pub focus_prev: HashMap<String, Vec<String>>,
@@ -156,7 +166,7 @@ mod config_deserializer {
     }
 
     #[derive(Deserialize, Debug)]
-    pub struct SpawnBindings {
+    pub struct SpawnBindingDefinition {
         pub spawns: Vec<HashMap<String, Vec<String>>>,
     }
 
