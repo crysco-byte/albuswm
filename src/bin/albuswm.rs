@@ -13,7 +13,7 @@ fn main() -> Result<()> {
 
     let padding = 20;
     let layouts = layouts![
-        TileLayout::new("tile"),
+        TileLayout::new("tile", 5, 20),
         StackLayout::new("stack-padded", padding),
         StackLayout::new("stack", 0),
     ];

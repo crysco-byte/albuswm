@@ -7,6 +7,8 @@ use crate::Viewport;
 pub struct TileLayout {
     name: String,
     resized_width: i16,
+    outergaps: u32,
+    innergaps: u32
 }
 
 impl Layout for TileLayout {
@@ -55,10 +57,12 @@ impl Layout for TileLayout {
 }
 
 impl TileLayout {
-    pub fn new<S: Into<String>>(name: S) -> TileLayout {
+    pub fn new<S: Into<String>>(name: S, innergaps: u32, outergaps: u32,) -> TileLayout {
         Self {
             name: name.into(),
-            resized_width: 0,
+            resized_width: 80,
+            innergaps,
+            outergaps
         }
     }
 
@@ -106,7 +110,7 @@ impl TileLayout {
         viewport: &Viewport,
         window_id: &WindowId,
     ) {
-        let focused_geometry = self.get_focused_geometry(viewport);
+        let focused_geometry = self.get_master_geometry(viewport);
         connection.disable_window_tracking(window_id);
         connection.map_window(window_id);
         connection.configure_window(window_id, &focused_geometry);
@@ -119,24 +123,24 @@ impl TileLayout {
         stack: &Stack<WindowId>,
         viewport: &Viewport,
     ) -> WindowGeometry {
-        let x = ((viewport.width / 2) as i16 + self.resized_width) as u32;
-        let width = ((viewport.width / 2) as i16 - (self.resized_width)) as u32;
-        let height = viewport.height / (stack.len() - 1) as u32;
+        let x = ((viewport.width / 2) as i16 + self.resized_width) as u32 + self.innergaps;
+        let width = ((viewport.width / 2) as i16 - (self.resized_width)) as u32 - (self.outergaps * 2);
+        let height = (viewport.height - self.outergaps * 2 + self.innergaps) / (stack.len() - 1) as u32 - self.innergaps;
         WindowGeometry {
             x,
-            y: i as u32 * height,
+            y: self.outergaps + (i as u32 * (height + self.innergaps)) ,
             width,
             height,
         }
     }
 
-    fn get_focused_geometry(&self, viewport: &Viewport) -> WindowGeometry {
-        let width = (((viewport.width / 2) as i16) + (self.resized_width)) as u32;
+    fn get_master_geometry(&self, viewport: &Viewport) -> WindowGeometry {
+        let width = ((((viewport.width / 2) as i16) + (self.resized_width)) as u32) - self.outergaps;
         WindowGeometry {
-            x: viewport.x,
-            y: viewport.y,
+            x: viewport.x + self.outergaps,
+            y: viewport.y + self.outergaps,
             width,
-            height: viewport.height,
+            height: viewport.height - (self.outergaps * 2),
         }
     }
 
