@@ -131,7 +131,7 @@ impl Group {
         let removed = self.stack.remove(|w| w == window_id);
         if !self.stack.is_empty() {
             self.master = Some(*self.stack.focused().unwrap())
-        }else{
+        } else {
             self.master = None
         }
         self.perform_layout();
@@ -147,7 +147,7 @@ impl Group {
         let removed = self.stack.remove_focused();
         if !self.stack.is_empty() {
             self.master = Some(*self.stack.focused().unwrap())
-        }else{
+        } else {
             self.master = None
         }
         self.perform_layout();
