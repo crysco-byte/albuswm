@@ -5,7 +5,7 @@ extern crate log;
 extern crate strum_macros;
 
 pub mod cmd;
-pub mod config_handler;
+pub mod config;
 mod groups;
 mod keys;
 pub mod layout;
