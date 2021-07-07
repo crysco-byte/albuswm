@@ -2,14 +2,14 @@
 extern crate albuswm;
 
 use albuswm::layout::*;
-use albuswm::{config_handler, gen_groups, Albus, Result};
+use albuswm::{config, gen_groups, Albus, Result};
 
 fn main() -> Result<()> {
     albuswm::intiailize_logger()?;
 
     #[rustfmt::skip]
-    let keys_bound_to_commands = config_handler::parser::get_keys_from_config_file();
-    let group_defs = config_handler::parser::get_parsed_group_definitions();
+    let keys_bound_to_commands = config_handler::parser::get_bound_commands();
+    let group_defs = config_handler::parser::get_bound_groups();
 
     let padding = 20;
     let layouts = layouts![
