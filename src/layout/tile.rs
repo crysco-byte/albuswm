@@ -23,28 +23,15 @@ impl Layout for TileLayout {
         if stack.is_empty() {
             return;
         }
-        let focused_id = if master.is_none() {
+        let master_id = if master.is_none() {
             stack.focused().unwrap()
         } else {
             master.as_ref().unwrap()
         };
-        let mut accumulator: u32 = 0;
         if stack.len() < 2 {
-            Self::configure_single_window(connection, viewport, focused_id);
+            Self::configure_single_window(connection, viewport, master_id);
         } else {
-            self.configure_focused_window(connection, viewport, focused_id);
-            for window_id in stack.iter() {
-                if window_id != focused_id {
-                    self.configure_unfocused_window(
-                        accumulator,
-                        connection,
-                        stack,
-                        viewport,
-                        window_id,
-                    );
-                    accumulator += 1;
-                }
-            }
+            self.tile(connection, viewport, stack, master_id);
         }
     }
 
@@ -72,6 +59,29 @@ impl TileLayout {
         Self {
             name: name.into(),
             resized_width: 0,
+        }
+    }
+
+    fn tile(
+        &self,
+        connection: &Connection,
+        viewport: &Viewport,
+        stack: &Stack<WindowId>,
+        focused_id: &WindowId,
+    ) {
+        self.configure_focused_window(connection, viewport, focused_id);
+        let mut accumulator = 0;
+        for window_id in stack.iter() {
+            if window_id != focused_id {
+                self.configure_unfocused_window(
+                    accumulator,
+                    connection,
+                    stack,
+                    viewport,
+                    window_id,
+                );
+                accumulator += 1;
+            }
         }
     }
 
