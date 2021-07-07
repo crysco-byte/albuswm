@@ -122,9 +122,7 @@ impl Group {
     pub fn add_window(&mut self, window_id: WindowId) {
         info!("Adding window to group {}: {}", self.name(), window_id);
         self.stack.push(window_id);
-        if self.master.is_none() {
-            self.master = Some(*self.stack.focused().unwrap());
-        }
+        self.master = Some(window_id);
         self.perform_layout();
     }
 
