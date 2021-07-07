@@ -23,7 +23,13 @@ impl Layout for StackLayout {
         &self.name
     }
 
-    fn layout(&self, connection: &Connection, viewport: &Viewport, stack: &Stack<WindowId>) {
+    fn layout(
+        &self,
+        connection: &Connection,
+        viewport: &Viewport,
+        stack: &Stack<WindowId>,
+        _master: &Option<WindowId>,
+    ) {
         if stack.is_empty() {
             return;
         }

@@ -14,7 +14,7 @@ use crate::Viewport;
 pub use self::ewmh::StrutPartial;
 
 /// A handle to an X Window.
-#[derive(Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct WindowId(xcb::Window);
 
 impl WindowId {

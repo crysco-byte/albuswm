@@ -13,11 +13,21 @@ impl Layout for TileLayout {
     fn name(&self) -> &str {
         &self.name
     }
-    fn layout(&self, connection: &Connection, viewport: &Viewport, stack: &Stack<WindowId>) {
+    fn layout(
+        &self,
+        connection: &Connection,
+        viewport: &Viewport,
+        stack: &Stack<WindowId>,
+        master: &Option<WindowId>,
+    ) {
         if stack.is_empty() {
             return;
         }
-        let focused_id = stack.focused().unwrap();
+        let focused_id = if master.is_none() {
+            stack.focused().unwrap()
+        } else {
+            master.as_ref().unwrap()
+        };
         let mut accumulator: u32 = 0;
         if stack.len() < 2 {
             Self::configure_single_window(connection, viewport, focused_id);

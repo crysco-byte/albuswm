@@ -34,6 +34,7 @@ impl GroupBuilder {
             stack: Stack::new(),
             layouts: layouts_stack,
             viewport: Viewport::default(),
+            master: None,
         }
     }
 }
@@ -45,6 +46,7 @@ pub struct Group {
     stack: Stack<WindowId>,
     layouts: Stack<Box<dyn Layout>>,
     viewport: Viewport,
+    master: Option<WindowId>,
 }
 
 impl Group {
@@ -94,13 +96,19 @@ impl Group {
         self.active = false;
     }
 
+    fn change_master(&mut self) {
+        if !self.stack.is_empty() {
+            self.master = Some(*self.stack.focused().unwrap());
+        }
+    }
+
     fn perform_layout(&mut self) {
         if !self.active {
             return;
         }
 
         if let Some(layout) = self.layouts.focused() {
-            layout.layout(&self.connection, &self.viewport, &self.stack)
+            layout.layout(&self.connection, &self.viewport, &self.stack, &self.master)
         }
 
         // Tell X to focus the focused window for this group, or to unset
@@ -120,6 +128,11 @@ impl Group {
     pub fn remove_window(&mut self, window_id: &WindowId) -> WindowId {
         info!("Removing window from group {}: {}", self.name(), window_id);
         let removed = self.stack.remove(|w| w == window_id);
+        if !self.stack.is_empty() {
+            self.master = Some(*self.stack.focused().unwrap())
+        }else{
+            self.master = None
+        }
         self.perform_layout();
         removed
     }
@@ -131,6 +144,11 @@ impl Group {
             self.stack.focused()
         );
         let removed = self.stack.remove_focused();
+        if !self.stack.is_empty() {
+            self.master = Some(*self.stack.focused().unwrap())
+        }else{
+            self.master = None
+        }
         self.perform_layout();
         removed.map(|window| {
             self.connection.disable_window_tracking(&window);
@@ -163,11 +181,13 @@ impl Group {
             self.name(),
             self.stack.focused()
         );
+        self.change_master();
         self.perform_layout();
     }
 
     pub fn focus_previous(&mut self) {
         self.stack.focus_previous();
+        self.change_master();
         info!(
             "Focusing previous window in group {}: {:?}",
             self.name(),
