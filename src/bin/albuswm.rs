@@ -18,7 +18,8 @@ fn main() -> Result<()> {
         StackLayout::new("stack", 0),
     ];
 
-    let (keys_bound_to_commands_with_group_bindings, groups) = gen_groups(keys_bound_to_commands, group_defs);
+    let (keys_bound_to_commands_with_group_bindings, groups) =
+        gen_groups(keys_bound_to_commands, group_defs);
 
     Albus::new(keys_bound_to_commands_with_group_bindings, groups, &layouts)?.run();
 
