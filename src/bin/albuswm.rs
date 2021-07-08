@@ -10,12 +10,11 @@ fn main() -> Result<()> {
     #[rustfmt::skip]
     let keys_bound_to_commands = config::parser::get_bound_commands();
     let group_defs = config::parser::get_bound_groups();
+    let (innergaps, outergaps) = config::parser::get_gaps();
 
-    let padding = 20;
     let layouts = layouts![
-        TileLayout::new("tile", 5, 20),
-        StackLayout::new("stack-padded", padding),
-        StackLayout::new("stack", 0),
+        TileLayout::new("tile", innergaps, outergaps),
+        StackLayout::new("stack"),
     ];
 
     let (keys_bound_to_commands_with_group_bindings, groups) =
