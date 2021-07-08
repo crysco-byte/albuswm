@@ -124,7 +124,7 @@ impl TileLayout {
         viewport: &Viewport,
     ) -> WindowGeometry {
         let x = ((viewport.width / 2) as i16 + self.resized_width) as u32 + self.innergaps;
-        let width = ((viewport.width / 2) as i16 - (self.resized_width)) as u32 - (self.outergaps * 2);
+        let width = ((viewport.width / 2) as i16 - (self.resized_width)) as u32 - self.outergaps;
         let height = (viewport.height - self.outergaps * 2 + self.innergaps) / (stack.len() - 1) as u32 - self.innergaps;
         WindowGeometry {
             x,
