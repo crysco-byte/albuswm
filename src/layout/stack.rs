@@ -6,14 +6,12 @@ use crate::Viewport;
 #[derive(Clone)]
 pub struct StackLayout {
     name: String,
-    padding: u32,
 }
 
 impl StackLayout {
-    pub fn new<S: Into<String>>(name: S, padding: u32) -> StackLayout {
+    pub fn new<S: Into<String>>(name: S) -> StackLayout {
         StackLayout {
             name: name.into(),
-            padding,
         }
     }
 }
@@ -36,12 +34,7 @@ impl Layout for StackLayout {
 
         // A non-empty `Stack` is guaranteed to have something focused.
         let focused_id = stack.focused().unwrap();
-        let geometry = WindowGeometry {
-            x: viewport.x + self.padding,
-            y: viewport.y + self.padding,
-            width: viewport.width - (self.padding * 2),
-            height: viewport.height - (self.padding * 2),
-        };
+        let geometry = WindowGeometry::default(viewport);
 
         for window_id in stack.iter() {
             if focused_id == window_id {
