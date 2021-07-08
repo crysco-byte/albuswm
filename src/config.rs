@@ -10,6 +10,15 @@ pub mod parser {
     pub type XKeyValue = u32;
     type BoundCommand = (Vec<ModKey>, XKeyValue, Command);
     type BoundGroup = (ModKey, XKeyValue, GroupName, LayoutName);
+    type Innergaps = u32;
+    type Outergaps = u32;
+
+    pub fn get_gaps() -> (Innergaps, Outergaps) {
+        null_check_config();
+        let config = config_file_handler::read_config_file();
+        let deserialized_config = config_deserializer::deserialize_config(config);
+        (deserialized_config.gaps.inner, deserialized_config.gaps.outer)
+    }
 
     pub fn get_bound_commands() -> Vec<BoundCommand> {
         null_check_config();
@@ -147,6 +156,7 @@ mod config_deserializer {
         pub key_bindings: KeyBindingDefinition,
         pub spawn_bindings: SpawnBindingDefinition,
         pub group_definitions: GroupDefinition,
+        pub gaps: Gaps
     }
 
     #[derive(Deserialize, Debug)]
@@ -167,6 +177,12 @@ mod config_deserializer {
     #[derive(Deserialize, Debug)]
     pub struct SpawnBindingDefinition {
         pub spawns: Vec<HashMap<String, Vec<String>>>,
+    }
+
+    #[derive(Deserialize, Debug)]
+    pub struct Gaps {
+        pub inner: u32,
+        pub outer: u32,
     }
 
     pub fn deserialize_config(config_file: String) -> Config {
@@ -267,6 +283,10 @@ groups = [
     {mask = "Mod1", key="XK_d", name="gamma", layout="tile"},
     {mask = "Mod1", key="XK_f", name="delta", layout="tile"},
 ]
+
+[gaps]
+inner = 5
+outer = 20
     "#;
 }
 
