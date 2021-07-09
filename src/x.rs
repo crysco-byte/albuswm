@@ -308,6 +308,8 @@ impl Connection {
 
     /// Sets the window's position and size.
     pub fn configure_window(&self, window_id: &WindowId, window_config: &WindowGeometry) {
+        self.disable_window_tracking(window_id);
+        self.map_window(window_id);
         let values = [
             (xcb::CONFIG_WINDOW_X as u16, window_config.x),
             (xcb::CONFIG_WINDOW_Y as u16, window_config.y),
@@ -315,6 +317,7 @@ impl Connection {
             (xcb::CONFIG_WINDOW_HEIGHT as u16, window_config.height),
         ];
         xcb::configure_window(&self.conn, window_id.to_x(), &values);
+        self.enable_window_tracking(window_id);
     }
 
     pub fn stack_window_above(&self, window_id: &WindowId) {

@@ -44,10 +44,7 @@ impl Layout for StackLayout {
             connection.unmap_window(window_id);
             connection.enable_window_tracking(window_id);
         }
-        connection.disable_window_tracking(focused_id);
-        connection.map_window(focused_id);
         connection.configure_window(focused_id, &geometry);
-        connection.enable_window_tracking(focused_id);
     }
 
     fn resize_right(&mut self, _viewport: &Viewport, _resize_amount: i16) {

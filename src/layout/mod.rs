@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::stack::Stack;
-use crate::x::{Connection, WindowId};
+use crate::x::{Connection, WindowId, WindowGeometry};
 use crate::Viewport;
 
 mod stack;

@@ -31,7 +31,7 @@ impl Layout for TileLayout {
             master.as_ref().unwrap()
         };
         if stack.len() < 2 {
-            Self::configure_single_window(connection, viewport, master_id);
+            super::configure_single_window(connection, viewport, master_id);
         } else {
             self.tile(connection, viewport, stack, master_id);
         }
@@ -98,10 +98,7 @@ impl TileLayout {
         window_id: &WindowId,
     ) {
         let unfocused_geometry = self.get_unfocused_geometry(i, stack, viewport);
-        connection.disable_window_tracking(window_id);
-        connection.map_window(window_id);
         connection.configure_window(window_id, &unfocused_geometry);
-        connection.enable_window_tracking(window_id);
     }
 
     fn configure_focused_window(
@@ -111,10 +108,7 @@ impl TileLayout {
         window_id: &WindowId,
     ) {
         let focused_geometry = self.get_master_geometry(viewport);
-        connection.disable_window_tracking(window_id);
-        connection.map_window(window_id);
         connection.configure_window(window_id, &focused_geometry);
-        connection.enable_window_tracking(window_id);
     }
 
     fn get_unfocused_geometry(
