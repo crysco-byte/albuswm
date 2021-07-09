@@ -143,11 +143,4 @@ impl TileLayout {
             height: viewport.height - (self.outergaps * 2),
         }
     }
-
-    fn configure_single_window(connection: &Connection, viewport: &Viewport, window_id: &WindowId) {
-        connection.disable_window_tracking(window_id);
-        connection.map_window(window_id);
-        connection.configure_window(window_id, &WindowGeometry::default(viewport));
-        connection.enable_window_tracking(window_id);
-    }
 }
