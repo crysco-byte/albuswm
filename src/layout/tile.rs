@@ -38,21 +38,15 @@ impl Layout for TileLayout {
     }
 
     fn resize_left(&mut self, viewport: &Viewport, resize_amount: i16) {
-        self.resized_width -=
-            if self.resized_width > -((viewport.width / 2) as i16 - (viewport.width / 8) as i16) {
-                resize_amount
-            } else {
-                return;
-            };
+        if self.resized_width > -((viewport.width / 2) as i16 - (viewport.width / 8) as i16) {
+            self.resized_width -= resize_amount;
+        }
     }
 
     fn resize_right(&mut self, viewport: &Viewport, resize_amount: i16) {
-        self.resized_width +=
-            if self.resized_width < ((viewport.width / 2) as i16 - (viewport.width / 8) as i16) {
-                resize_amount
-            } else {
-                return;
-            };
+        if self.resized_width < ((viewport.width / 2) as i16 - (viewport.width / 8) as i16) {
+            self.resized_width += resize_amount;
+        }
     }
 }
 
@@ -118,7 +112,7 @@ impl TileLayout {
         viewport: &Viewport,
     ) -> WindowGeometry {
         let x = ((viewport.width / 2) as i16 + self.resized_width) as u32 + self.innergaps;
-        let width = ((viewport.width / 2) as i16 - (self.resized_width)) as u32 - self.outergaps;
+        let width = ((viewport.width / 2) as i16 - self.resized_width) as u32 - self.outergaps;
         let height = (viewport.height - self.outergaps * 2 + self.innergaps) / (stack.len() - 1) as u32 - self.innergaps;
         WindowGeometry {
             x,
