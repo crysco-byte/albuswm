@@ -37,12 +37,16 @@ impl Layout for CenterMaster {
         }
     }
 
-    fn resize_left(&mut self, _viewport: &Viewport, _resize_amount: i16) {
-        return;
+    fn resize_left(&mut self, viewport: &Viewport, resize_amount: i16) {
+        if self.resized_width > -((viewport.width / 2) as i16 - (viewport.width / 8) as i16) {
+            self.resized_width += resize_amount;
+        }
     }
 
-    fn resize_right(&mut self, _viewport: &Viewport, _resize_amount: i16) {
-        return;
+    fn resize_right(&mut self, viewport: &Viewport, resize_amount: i16) {
+        if self.resized_width < ((viewport.width / 2) as i16 - (viewport.width / 8) as i16) {
+            self.resized_width -= resize_amount;
+        }
     }
 }
 
@@ -109,7 +113,7 @@ impl CenterMaster {
         viewport: &Viewport,
     ) -> WindowGeometry {
         let master_width = viewport.width/2 + viewport.width/16;
-        let width = (viewport.width - master_width)/2;
+        let width = (self.resized_width + ((viewport.width - master_width)/2) as i16) as u32;
         let stack_length = stack.len() as u32;
         let height;
         let y;
@@ -125,7 +129,7 @@ impl CenterMaster {
             }
         }else{
             let right_stack_len:u32 = (stack_length - 1) / 2;
-            x = master_width + (viewport.width - master_width) / 2;
+            x = (self.resized_width*-1 + (master_width + (viewport.width - master_width) / 2) as i16) as u32;
             height = viewport.height / right_stack_len;
             if stack.len() % 2 == 0 {
                 y = if right_stack_len < 2 {0} else{(i-1) * viewport.height / (stack_length-2)};
@@ -142,7 +146,7 @@ impl CenterMaster {
     }
 
     fn get_master_geometry(&self, viewport: &Viewport) -> WindowGeometry {
-        let width = viewport.width/2 + viewport.width/16;
+        let width = ((self.resized_width*-2) + (viewport.width / 2 + viewport.width/16) as i16) as u32;
         let x = (viewport.width - width) / 2;
         WindowGeometry {
             x,
