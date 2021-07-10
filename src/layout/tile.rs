@@ -128,7 +128,7 @@ impl TileLayout {
             x: viewport.x + self.outergaps,
             y: viewport.y + self.outergaps,
             width,
-            height: viewport.height - (self.outergaps * 2),
+            height: viewport.height - self.outergaps * 2,
         }
     }
 }
