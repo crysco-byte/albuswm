@@ -6,7 +6,9 @@ use crate::Viewport;
 
 mod stack;
 mod tile;
+mod cmaster;
 
+pub use self::cmaster::CenterMaster;
 pub use self::stack::StackLayout;
 pub use self::tile::TileLayout;
 

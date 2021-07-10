@@ -14,6 +14,7 @@ fn main() -> Result<()> {
 
     let layouts = layouts![
         TileLayout::new("tile", innergaps, outergaps),
+        CenterMaster::new("c_master", innergaps, outergaps),
         StackLayout::new("stack"),
     ];
 
