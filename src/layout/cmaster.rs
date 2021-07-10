@@ -113,7 +113,7 @@ impl CenterMaster {
         viewport: &Viewport,
     ) -> WindowGeometry {
         let master_width = viewport.width/2 + viewport.width/16;
-        let width = (self.resized_width + ((viewport.width - master_width)/2) as i16) as u32;
+        let mut width = (self.resized_width + ((viewport.width - master_width)/2) as i16) as u32;
         let stack_length = stack.len() as u32;
         let height;
         let y;
@@ -121,7 +121,7 @@ impl CenterMaster {
         if i % 2 == 0{
             let left_stack_len:u32 = stack_length / 2;
             height = viewport.height / left_stack_len;
-            x = 0;
+            x = self.outergaps;
             if stack.len() % 2 == 0 {
                 y = i * viewport.height / stack_length;
             }else {
@@ -129,8 +129,9 @@ impl CenterMaster {
             }
         }else{
             let right_stack_len:u32 = (stack_length - 1) / 2;
-            x = (self.resized_width*-1 + (master_width + (viewport.width - master_width) / 2) as i16) as u32;
+            x = (self.resized_width*-1 + (master_width + (viewport.width - master_width) / 2) as i16) as u32 + self.outergaps;
             height = viewport.height / right_stack_len;
+            width -= self.outergaps * 2;
             if stack.len() % 2 == 0 {
                 y = if right_stack_len < 2 {0} else{(i-1) * viewport.height / (stack_length-2)};
             }else {
@@ -146,13 +147,13 @@ impl CenterMaster {
     }
 
     fn get_master_geometry(&self, viewport: &Viewport) -> WindowGeometry {
-        let width = ((self.resized_width*-2) + (viewport.width / 2 + viewport.width/16) as i16) as u32;
-        let x = (viewport.width - width) / 2;
+        let width = ((self.resized_width*-2) + (viewport.width / 2 + viewport.width/16) as i16) as u32 - self.innergaps * 2;
+        let x = (viewport.width - width) / 2 + self.outergaps;
         WindowGeometry {
             x,
-            y: viewport.y,
+            y: self.outergaps,
             width,
-            height: viewport.height,
+            height: viewport.height - self.outergaps*2,
         }
     }
 }
