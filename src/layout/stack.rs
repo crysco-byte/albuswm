@@ -10,9 +10,7 @@ pub struct StackLayout {
 
 impl StackLayout {
     pub fn new<S: Into<String>>(name: S) -> StackLayout {
-        StackLayout {
-            name: name.into(),
-        }
+        StackLayout { name: name.into() }
     }
 }
 

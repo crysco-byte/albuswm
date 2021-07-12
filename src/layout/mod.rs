@@ -1,12 +1,12 @@
 use std::fmt;
 
 use crate::stack::Stack;
-use crate::x::{Connection, WindowId, WindowGeometry};
+use crate::x::{Connection, WindowGeometry, WindowId};
 use crate::Viewport;
 
+mod cmaster;
 mod stack;
 mod tile;
-mod cmaster;
 
 pub use self::cmaster::CenterMaster;
 pub use self::stack::StackLayout;
@@ -49,7 +49,6 @@ impl fmt::Debug for dyn Layout {
         write!(f, "Layout {{ \"{}\" }}", self.name())
     }
 }
-
 
 fn configure_single_window(connection: &Connection, viewport: &Viewport, window_id: &WindowId) {
     connection.disable_window_tracking(window_id);

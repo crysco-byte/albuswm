@@ -8,7 +8,7 @@ pub struct TileLayout {
     name: String,
     resized_width: i16,
     outergaps: u32,
-    innergaps: u32
+    innergaps: u32,
 }
 
 impl Layout for TileLayout {
@@ -51,12 +51,12 @@ impl Layout for TileLayout {
 }
 
 impl TileLayout {
-    pub fn new<S: Into<String>>(name: S, innergaps: u32, outergaps: u32,) -> TileLayout {
+    pub fn new<S: Into<String>>(name: S, innergaps: u32, outergaps: u32) -> TileLayout {
         Self {
             name: name.into(),
             resized_width: 80,
             innergaps,
-            outergaps
+            outergaps,
         }
     }
 
@@ -113,17 +113,20 @@ impl TileLayout {
     ) -> WindowGeometry {
         let x = ((viewport.width / 2) as i16 + self.resized_width) as u32 + self.innergaps;
         let width = ((viewport.width / 2) as i16 - self.resized_width) as u32 - self.outergaps;
-        let height = (viewport.height - self.outergaps * 2 + self.innergaps) / (stack.len() - 1) as u32 - self.innergaps;
+        let height = (viewport.height - self.outergaps * 2 + self.innergaps)
+            / (stack.len() - 1) as u32
+            - self.innergaps;
         WindowGeometry {
             x,
-            y: self.outergaps + (i as u32 * (height + self.innergaps)) ,
+            y: self.outergaps + (i as u32 * (height + self.innergaps)),
             width,
             height,
         }
     }
 
     fn get_master_geometry(&self, viewport: &Viewport) -> WindowGeometry {
-        let width = ((((viewport.width / 2) as i16) + (self.resized_width)) as u32) - self.outergaps;
+        let width =
+            ((((viewport.width / 2) as i16) + (self.resized_width)) as u32) - self.outergaps;
         WindowGeometry {
             x: viewport.x + self.outergaps,
             y: viewport.y + self.outergaps,
