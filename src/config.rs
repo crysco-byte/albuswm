@@ -17,7 +17,10 @@ pub mod parser {
         null_check_config();
         let config = config_file_handler::read_config_file();
         let deserialized_config = config_deserializer::deserialize_config(config);
-        (deserialized_config.gaps.inner, deserialized_config.gaps.outer)
+        (
+            deserialized_config.gaps.inner,
+            deserialized_config.gaps.outer,
+        )
     }
 
     pub fn get_bound_commands() -> Vec<BoundCommand> {
@@ -45,7 +48,9 @@ pub mod parser {
         result
     }
 
-    fn parse_group_defintions_from_config(data_group: HashMap<String, String>) -> Result<BoundGroup, ()> {
+    fn parse_group_defintions_from_config(
+        data_group: HashMap<String, String>,
+    ) -> Result<BoundGroup, ()> {
         let mask = key_parse::parse_mask_keys(vec![data_group["mask"].clone()])[0];
         let xk_key = safe_xk_parse(&data_group["key"])?;
         Ok((
@@ -156,7 +161,7 @@ mod config_deserializer {
         pub key_bindings: KeyBindingDefinition,
         pub spawn_bindings: SpawnBindingDefinition,
         pub group_definitions: GroupDefinition,
-        pub gaps: Gaps
+        pub gaps: Gaps,
     }
 
     #[derive(Deserialize, Debug)]
