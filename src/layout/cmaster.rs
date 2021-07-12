@@ -8,7 +8,7 @@ pub struct CenterMaster {
     name: String,
     resized_width: i16,
     outergaps: u32,
-    innergaps: u32
+    innergaps: u32,
 }
 
 impl Layout for CenterMaster {
@@ -51,15 +51,14 @@ impl Layout for CenterMaster {
 }
 
 impl CenterMaster {
-    pub fn new<S: Into<String>>(name: S, innergaps: u32, outergaps: u32,) -> CenterMaster {
+    pub fn new<S: Into<String>>(name: S, innergaps: u32, outergaps: u32) -> CenterMaster {
         Self {
             name: name.into(),
             resized_width: 80,
             innergaps,
-            outergaps
+            outergaps,
         }
     }
-
 
     fn c_master(
         &self,
@@ -72,13 +71,7 @@ impl CenterMaster {
         let mut accumulator = 0;
         for window_id in stack.iter() {
             if window_id != focused_id {
-                self.configure_normal_window(
-                    accumulator,
-                    connection,
-                    stack,
-                    viewport,
-                    window_id,
-                );
+                self.configure_normal_window(accumulator, connection, stack, viewport, window_id);
                 accumulator += 1;
             }
         }
@@ -112,48 +105,57 @@ impl CenterMaster {
         stack: &Stack<WindowId>,
         viewport: &Viewport,
     ) -> WindowGeometry {
-        let master_width = viewport.width/2 + viewport.width/16;
-        let mut width = (self.resized_width + ((viewport.width - master_width)/2) as i16) as u32;
+        let master_width = viewport.width / 2 + viewport.width / 16;
+        let mut width = (self.resized_width + ((viewport.width - master_width) / 2) as i16) as u32;
         let stack_length = stack.len() as u32;
         let height;
         let y;
         let x;
-        if i % 2 == 0{
-            let left_stack_len:u32 = stack_length / 2;
-            height = viewport.height / left_stack_len;
+        if i % 2 == 0 {
+            let left_stack_len: u32 = stack_length / 2;
+            height = (viewport.height - self.outergaps*2 + self.innergaps) / left_stack_len;
             x = self.outergaps;
             if stack.len() % 2 == 0 {
-                y = i * viewport.height / stack_length;
-            }else {
-                y = i * viewport.height / (stack_length - 1);
+                y = i * (viewport.height - self.outergaps * 2 + self.innergaps) / stack_length;
+            } else {
+                y = i * (viewport.height - self.outergaps * 2 + self.innergaps)  / (stack_length - 1);
             }
-        }else{
-            let right_stack_len:u32 = (stack_length - 1) / 2;
-            x = (self.resized_width*-1 + (master_width + (viewport.width - master_width) / 2) as i16) as u32 + self.outergaps;
-            height = viewport.height / right_stack_len;
+        } else {
+            let right_stack_len: u32 = (stack_length - 1) / 2;
+            x = (self.resized_width * -1
+                + (master_width + (viewport.width - master_width) / 2) as i16)
+                as u32
+                + self.outergaps;
+            height = (viewport.height - self.outergaps*2 + self.innergaps) / right_stack_len;
             width -= self.outergaps * 2;
             if stack.len() % 2 == 0 {
-                y = if right_stack_len < 2 {0} else{(i-1) * viewport.height / (stack_length-2)};
-            }else {
-                y = (i-1) * viewport.height / (stack_length - 1);
+                y = if right_stack_len < 2 {
+                    0
+                } else {
+                    (i - 1) * (viewport.height - self.outergaps *2 + self.innergaps)  / (stack_length - 2)
+                };
+            } else {
+                y = (i - 1) * (viewport.height - self.outergaps * 2 + self.innergaps)  / (stack_length - 1);
             }
         }
         WindowGeometry {
             x,
-            y,
+            y: y + self.outergaps,
             width,
-            height,
+            height: height - self.innergaps,
         }
     }
 
     fn get_master_geometry(&self, viewport: &Viewport) -> WindowGeometry {
-        let width = ((self.resized_width*-2) + (viewport.width / 2 + viewport.width/16) as i16) as u32 - self.innergaps * 2;
+        let width = ((self.resized_width * -2) + (viewport.width / 2 + viewport.width / 16) as i16)
+            as u32
+            - self.innergaps * 2;
         let x = (viewport.width - width) / 2 + self.outergaps;
         WindowGeometry {
             x,
             y: self.outergaps,
             width,
-            height: viewport.height - self.outergaps*2,
+            height: viewport.height - self.outergaps * 2,
         }
     }
 }
