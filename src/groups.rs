@@ -24,7 +24,7 @@ impl GroupBuilder {
     }
 
     pub fn build(self, connection: Rc<Connection>, layouts: Vec<Box<dyn Layout>>) -> Group {
-        let mut layouts_stack = Stack::from(layouts);
+        let mut layouts_stack: Stack<Box<dyn super::layout::Layout>> = Stack::from(layouts);
         layouts_stack.focus(|layout| layout.name() == self.default_layout);
 
         Group {
@@ -128,7 +128,7 @@ impl Group {
 
     pub fn remove_window(&mut self, window_id: &WindowId) -> WindowId {
         info!("Removing window from group {}: {}", self.name(), window_id);
-        let removed = self.stack.remove(|w| w == window_id);
+        let removed: WindowId = self.stack.remove(|w| w == window_id);
         if !self.stack.is_empty() {
             self.master = Some(*self.stack.focused().unwrap())
         } else {
@@ -144,7 +144,7 @@ impl Group {
             self.name(),
             self.stack.focused()
         );
-        let removed = self.stack.remove_focused();
+        let removed: Option<WindowId> = self.stack.remove_focused();
         if !self.stack.is_empty() {
             self.master = Some(*self.stack.focused().unwrap())
         } else {

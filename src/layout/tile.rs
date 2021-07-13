@@ -68,7 +68,7 @@ impl TileLayout {
         focused_id: &WindowId,
     ) {
         self.configure_focused_window(connection, viewport, focused_id);
-        let mut accumulator = 0;
+        let mut accumulator: u32 = 0;
         for window_id in stack.iter() {
             if window_id != focused_id {
                 self.configure_unfocused_window(
@@ -91,7 +91,7 @@ impl TileLayout {
         viewport: &Viewport,
         window_id: &WindowId,
     ) {
-        let unfocused_geometry = self.get_unfocused_geometry(i, stack, viewport);
+        let unfocused_geometry: WindowGeometry = self.get_unfocused_geometry(i, stack, viewport);
         connection.configure_window(window_id, &unfocused_geometry);
     }
 
@@ -101,7 +101,7 @@ impl TileLayout {
         viewport: &Viewport,
         window_id: &WindowId,
     ) {
-        let focused_geometry = self.get_master_geometry(viewport);
+        let focused_geometry: WindowGeometry = self.get_master_geometry(viewport);
         connection.configure_window(window_id, &focused_geometry);
     }
 
@@ -111,9 +111,9 @@ impl TileLayout {
         stack: &Stack<WindowId>,
         viewport: &Viewport,
     ) -> WindowGeometry {
-        let x = ((viewport.width / 2) as i16 + self.resized_width) as u32 + self.innergaps;
-        let width = ((viewport.width / 2) as i16 - self.resized_width) as u32 - self.outergaps;
-        let height = (viewport.height - self.outergaps * 2 + self.innergaps)
+        let x: u32 = ((viewport.width / 2) as i16 + self.resized_width) as u32 + self.innergaps;
+        let width: u32 = ((viewport.width / 2) as i16 - self.resized_width) as u32 - self.outergaps;
+        let height: u32 = (viewport.height - self.outergaps * 2 + self.innergaps)
             / (stack.len() - 1) as u32
             - self.innergaps;
         WindowGeometry {
@@ -125,7 +125,7 @@ impl TileLayout {
     }
 
     fn get_master_geometry(&self, viewport: &Viewport) -> WindowGeometry {
-        let width =
+        let width: u32 =
             ((((viewport.width / 2) as i16) + (self.resized_width)) as u32) - self.outergaps;
         WindowGeometry {
             x: viewport.x + self.outergaps,

@@ -8,7 +8,7 @@ pub type Command = Rc<dyn Fn(&mut Albus) -> Result<()>>;
 pub mod lazy {
 
     use std::rc::Rc;
-    use std::sync::Mutex;
+    use std::sync::{Mutex, MutexGuard};
 
     use failure::ResultExt;
 
@@ -63,13 +63,13 @@ pub mod lazy {
     /// Spawns the specified command.
     /// The returned `Command` will spawn the `Command` each time it is called.
     pub fn spawn(cmd: String, args: Vec<String>) -> Command {
-        let mut command = std::process::Command::new(cmd.clone());
+        let mut command: std::process::Command = std::process::Command::new(cmd.clone());
         if args.len() > 0 && args[0] != "" {
             command.args(args);
         }
-        let mutex = Mutex::new(command);
+        let mutex: Mutex<std::process::Command> = Mutex::new(command);
         Rc::new(move |_| {
-            let mut command = mutex.lock().unwrap();
+            let mut command: MutexGuard<std::process::Command> = mutex.lock().unwrap();
             command
                 .spawn()
                 .with_context(|_| format!("Could not spawn command: {:?}", *command))?;

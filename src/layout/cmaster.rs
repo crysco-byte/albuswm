@@ -105,12 +105,12 @@ impl CenterMaster {
         stack: &Stack<WindowId>,
         viewport: &Viewport,
     ) -> WindowGeometry {
-        let master_width = viewport.width / 2 + viewport.width / 16;
-        let mut width = (self.resized_width + ((viewport.width - master_width) / 2) as i16) as u32;
-        let stack_length = stack.len() as u32;
+        let master_width: u32 = viewport.width / 2 + viewport.width / 16;
+        let mut width: u32 = (self.resized_width + ((viewport.width - master_width) / 2) as i16) as u32;
+        let stack_length: u32 = stack.len() as u32;
         let height;
-        let y;
-        let x;
+        let y : u32;
+        let x : u32;
         if i % 2 == 0 {
             let left_stack_len: u32 = stack_length / 2;
             height = (viewport.height - self.outergaps*2 + self.innergaps) / left_stack_len;

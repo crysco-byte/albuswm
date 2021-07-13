@@ -24,7 +24,7 @@ impl Screen {
     /// Figure out the usable area of the screen based on the STRUT_PARTIAL of
     /// all docks.
     pub fn viewport(&self, screen_width: u32, screen_height: u32) -> Viewport {
-        let (left, right, top, bottom) = self
+        let (left, right, top, bottom): (u32, u32, u32, u32) = self
             .vec
             .borrow()
             .iter()

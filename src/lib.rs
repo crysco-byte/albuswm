@@ -12,7 +12,6 @@ pub mod layout;
 pub mod screen;
 mod stack;
 mod x;
-use cmd::Command;
 
 pub use crate::{groups::GroupBuilder, keys::ModKey, screen::Screen, stack::Stack};
 use {
@@ -40,8 +39,8 @@ pub mod keysym {
 pub fn intiailize_logger() -> Result<()> {
     log_panics::init();
 
-    let xdg_dirs = xdg::BaseDirectories::with_prefix("albus")?;
-    let log_path = xdg_dirs
+    let xdg_dirs: xdg::BaseDirectories = xdg::BaseDirectories::with_prefix("albus")?;
+    let log_path: std::path::PathBuf = xdg_dirs
         .place_data_file("albus.log")
         .context("Could not create log file")?;
 
@@ -63,11 +62,11 @@ pub fn intiailize_logger() -> Result<()> {
 }
 
 pub fn gen_groups(
-    keys: Vec<(Vec<ModKey>, u32, Command)>,
-    groupdef: Vec<(ModKey, u32, String, String)>,
-) -> (Vec<(Vec<ModKey>, u32, Command)>, Vec<GroupBuilder>) {
-    let mut additional_keys = Vec::new();
-    let mut groups = Vec::new();
+    keys: Vec<config::parser::BoundCommand>,
+    groupdef: Vec<config::parser::BoundGroup>,
+) -> (Vec<config::parser::BoundCommand>, Vec<GroupBuilder>) {
+    let mut additional_keys: Vec<config::parser::BoundCommand> = Vec::new();
+    let mut groups: Vec<GroupBuilder> = Vec::new();
     for item in groupdef {
         let (mask, key, group_name, layout_name) = (item.0, item.1, item.2.clone(), item.3);
         additional_keys.push(gen_move_window_to_group_keys!(mask, key, group_name));
@@ -134,18 +133,18 @@ impl Albus {
     where
         K: Into<KeyHandlers>,
     {
-        let keys = keys.into();
-        let connection = Rc::new(Connection::connect()?);
+        let keys: KeyHandlers = keys.into();
+        let connection: Rc<Connection> = Rc::new(Connection::connect()?);
         connection.install_as_wm(&keys)?;
 
-        let groups = Stack::from(
+        let groups: Stack<Group> = Stack::from(
             groups
                 .into_iter()
                 .map(|group: GroupBuilder| group.build(connection.clone(), layouts.to_owned()))
                 .collect::<Vec<Group>>(),
         );
 
-        let mut wm = Albus {
+        let mut wm: Albus = Albus {
             keys,
             groups,
             connection: connection.clone(),
@@ -153,11 +152,11 @@ impl Albus {
         };
 
         // Learn about existing top-level windows.
-        let existing_windows = connection.top_level_windows()?;
+        let existing_windows: Vec<WindowId> = connection.top_level_windows()?;
         for window in existing_windows {
             wm.manage_window(window);
         }
-        let viewport = wm.viewport();
+        let viewport: Viewport = wm.viewport();
         wm.group_mut().activate(viewport);
         wm.connection.update_ewmh_desktops(&wm.groups);
 
@@ -165,7 +164,7 @@ impl Albus {
     }
 
     fn viewport(&self) -> Viewport {
-        let (width, height) = self
+        let (width, height): (u32, u32) = self
             .connection
             .get_window_geometry(self.connection.root_window_id());
         self.screen.viewport(width, height)
@@ -188,7 +187,7 @@ impl Albus {
 
         self.group_mut().deactivate();
         self.groups.focus(|group| group.name() == name);
-        let viewport = self.viewport();
+        let viewport: Viewport = self.viewport();
         self.group_mut().activate(viewport);
         self.connection.update_ewmh_desktops(&self.groups);
     }
@@ -204,7 +203,7 @@ impl Albus {
             return;
         }
         if let Some(removed) = self.group_mut().remove_focused() {
-            let new_group = self.groups.iter_mut().find(|group| group.name() == name);
+            let new_group: Option<&mut Group> = self.groups.iter_mut().find(|group| group.name() == name);
             match new_group {
                 Some(new_group) => {
                     new_group.add_window(removed);
@@ -238,8 +237,8 @@ impl Albus {
             return;
         }
 
-        let window_types = self.connection.get_window_types(&window_id);
-        let dock = window_types.contains(&WindowType::Dock);
+        let window_types: Vec<WindowType> = self.connection.get_window_types(&window_id);
+        let dock: bool = window_types.contains(&WindowType::Dock);
 
         self.connection
             .enable_window_key_events(&window_id, &self.keys);
@@ -247,7 +246,7 @@ impl Albus {
         if dock {
             self.connection.map_window(&window_id);
             self.screen.add_dock(&self.connection, window_id);
-            let viewport = self.viewport();
+            let viewport: Viewport = self.viewport();
             self.group_mut().update_viewport(viewport);
         } else {
             self.connection.enable_window_tracking(&window_id);
@@ -267,14 +266,14 @@ impl Albus {
         self.screen.remove_dock(window_id);
 
         // The viewport may have changed.
-        let viewport = self.viewport();
+        let viewport: Viewport = self.viewport();
         self.group_mut().update_viewport(viewport);
     }
 
     pub fn run(mut self) {
         info!("Started WM, entering event loop.");
-        let event_loop_connection = self.connection.clone();
-        let event_loop = event_loop_connection.get_event_loop();
+        let event_loop_connection: Rc<Connection> = self.connection.clone();
+        let event_loop: x::EventLoop = event_loop_connection.get_event_loop();
         for event in event_loop {
             match event {
                 Event::MapRequest(window_id) => self.on_map_request(window_id),

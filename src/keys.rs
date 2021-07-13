@@ -56,7 +56,7 @@ pub struct KeyCombo {
 
 impl KeyCombo {
     fn new(mods: &[ModKey], keysym: Key) -> KeyCombo {
-        let mod_mask = mods.iter().fold(0, |mask, mod_key| mask | mod_key.mask());
+        let mod_mask: u32 = mods.iter().fold(0, |mask, mod_key| mask | mod_key.mask());
         KeyCombo { mod_mask, keysym }
     }
 }

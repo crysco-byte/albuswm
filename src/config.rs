@@ -8,15 +8,15 @@ pub mod parser {
     type LayoutName = String;
     type GroupName = String;
     pub type XKeyValue = u32;
-    type BoundCommand = (Vec<ModKey>, XKeyValue, Command);
-    type BoundGroup = (ModKey, XKeyValue, GroupName, LayoutName);
+    pub type BoundCommand = (Vec<ModKey>, XKeyValue, Command);
+    pub type BoundGroup = (ModKey, XKeyValue, GroupName, LayoutName);
     type Innergaps = u32;
     type Outergaps = u32;
 
     pub fn get_gaps() -> (Innergaps, Outergaps) {
         null_check_config();
-        let config = config_file_handler::read_config_file();
-        let deserialized_config = config_deserializer::deserialize_config(config);
+        let config: String = config_file_handler::read_config_file();
+        let deserialized_config: config_deserializer::Config = config_deserializer::deserialize_config(config);
         (
             deserialized_config.gaps.inner,
             deserialized_config.gaps.outer,
@@ -25,7 +25,7 @@ pub mod parser {
 
     pub fn get_bound_commands() -> Vec<BoundCommand> {
         null_check_config();
-        let config = config_file_handler::read_config_file();
+        let config: String = config_file_handler::read_config_file();
         let deserialized_config: config_deserializer::Config =
             config_deserializer::deserialize_config(config);
         get_parsed_bindings(deserialized_config)
@@ -33,10 +33,10 @@ pub mod parser {
 
     pub fn get_bound_groups() -> Vec<BoundGroup> {
         null_check_config();
-        let config = config_file_handler::read_config_file();
+        let config: String = config_file_handler::read_config_file();
         let deserialized_config: config_deserializer::GroupDefinition =
             config_deserializer::deserialize_config(config).group_definitions;
-        let mut result = Vec::new();
+        let mut result: Vec<BoundGroup> = Vec::new();
         for data_group in deserialized_config.groups {
             if let Ok(parsed) = parse_group_defintions_from_config(data_group.clone()) {
                 result.push(parsed);
@@ -51,8 +51,8 @@ pub mod parser {
     fn parse_group_defintions_from_config(
         data_group: HashMap<String, String>,
     ) -> Result<BoundGroup, ()> {
-        let mask = key_parse::parse_mask_keys(vec![data_group["mask"].clone()])[0];
-        let xk_key = safe_xk_parse(&data_group["key"])?;
+        let mask: ModKey = key_parse::parse_mask_keys(vec![data_group["mask"].clone()])[0];
+        let xk_key: u32 = safe_xk_parse(&data_group["key"])?;
         Ok((
             mask,
             xk_key,
@@ -68,8 +68,8 @@ pub mod parser {
     }
 
     fn get_parsed_bindings(parsed_config: config_deserializer::Config) -> Vec<BoundCommand> {
-        let mut key_bindings = parse_keybindings_from_config(parsed_config.key_bindings);
-        let spawn_bindings = parse_spawn_bindings_from_config(parsed_config.spawn_bindings);
+        let mut key_bindings: Vec<BoundCommand> = parse_keybindings_from_config(parsed_config.key_bindings);
+        let spawn_bindings: Vec<BoundCommand> = parse_spawn_bindings_from_config(parsed_config.spawn_bindings);
         key_bindings.extend(spawn_bindings);
         key_bindings
     }
@@ -78,13 +78,13 @@ pub mod parser {
         key_bindings: config_deserializer::KeyBindingDefinition,
     ) -> Vec<BoundCommand> {
         let mut result: Vec<BoundCommand> = Vec::new();
-        let kb_to_vec = convert_keybindings_into_vector(key_bindings);
+        let kb_to_vec: Vec<HashMap<String, Vec<String>>> = convert_keybindings_into_vector(key_bindings);
         for (i, data_group) in kb_to_vec.into_iter().enumerate() {
             if let Ok(parsed_mask_and_key) = key_parse::parse_mask_and_key(
                 data_group["mask"].clone(),
                 data_group["key"][0].clone(),
             ) {
-                let lazy_command = lazy_commands::get_cmd_based_on_action(
+                let lazy_command: Command = lazy_commands::get_cmd_based_on_action(
                     &lazy_commands::lookup_actiontypes_by_index(i),
                 );
                 result.push((parsed_mask_and_key.0, parsed_mask_and_key.1, lazy_command));
@@ -105,7 +105,7 @@ pub mod parser {
                 data_group["mask"].clone(),
                 data_group["key"][0].clone(),
             ) {
-                let lazy_command = lazy_commands::lazy_spawn(
+                let lazy_command: Command = lazy_commands::lazy_spawn(
                     data_group["command"].clone(),
                     data_group["args"].clone(),
                 );
@@ -240,8 +240,8 @@ mod config_file_handler {
     use xdg::BaseDirectories;
 
     pub fn create_default_config_file() {
-        let xdg_dirs = BaseDirectories::with_prefix("albus").unwrap();
-        let config_path = xdg_dirs
+        let xdg_dirs: BaseDirectories = BaseDirectories::with_prefix("albus").unwrap();
+        let config_path: std::path::PathBuf = xdg_dirs
             .place_config_file("config.toml")
             .expect("Could not create config file");
         let mut config_file = fs::File::create(config_path).expect("Failed to write config file");
@@ -251,16 +251,16 @@ mod config_file_handler {
     }
 
     pub fn read_config_file() -> String {
-        let xdg_dirs = BaseDirectories::with_prefix("albus").unwrap();
-        let config_file_path = xdg_dirs.find_config_file("config.toml").unwrap();
-        let mut file = fs::File::open(config_file_path).expect("Could not open config file");
-        let mut contents = String::new();
+        let xdg_dirs: BaseDirectories = BaseDirectories::with_prefix("albus").unwrap();
+        let config_file_path: std::path::PathBuf = xdg_dirs.find_config_file("config.toml").unwrap();
+        let mut file: fs::File = fs::File::open(config_file_path).expect("Could not open config file");
+        let mut contents: String = String::new();
         file.read_to_string(&mut contents).unwrap();
         contents
     }
 
     pub fn config_file_exists() -> bool {
-        let xdg_dirs = BaseDirectories::with_prefix("albus").unwrap();
+        let xdg_dirs: BaseDirectories = BaseDirectories::with_prefix("albus").unwrap();
         xdg_dirs.find_config_file("config.toml").is_some()
     }
 
