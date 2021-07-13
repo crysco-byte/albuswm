@@ -314,6 +314,7 @@ impl Connection {
             (xcb::CONFIG_WINDOW_WIDTH as u16, window_config.width),
             (xcb::CONFIG_WINDOW_HEIGHT as u16, window_config.height),
         ];
+        self.map_window(window_id);
         xcb::configure_window(&self.conn, window_id.to_x(), &values);
     }
 

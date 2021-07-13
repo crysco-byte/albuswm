@@ -123,7 +123,6 @@ impl Group {
         info!("Adding window to group {}: {}", self.name(), window_id);
         self.stack.push(window_id);
         self.master = Some(window_id);
-        self.connection.map_window(&window_id);
         self.perform_layout();
     }
 
