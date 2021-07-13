@@ -38,13 +38,13 @@ impl Layout for CenterMaster {
     }
 
     fn resize_left(&mut self, viewport: &Viewport, resize_amount: i16) {
-        if self.resized_width > -((viewport.width / 2) as i16 - (viewport.width / 8) as i16) {
+        if !(self.resized_width > (viewport.width/6) as i16) {
             self.resized_width += resize_amount;
         }
     }
 
     fn resize_right(&mut self, viewport: &Viewport, resize_amount: i16) {
-        if self.resized_width < ((viewport.width / 2) as i16 - (viewport.width / 8) as i16) {
+        if !(self.resized_width < -((viewport.width/14) as i16)) {
             self.resized_width -= resize_amount;
         }
     }
@@ -54,7 +54,7 @@ impl CenterMaster {
     pub fn new<S: Into<String>>(name: S, innergaps: u32, outergaps: u32) -> CenterMaster {
         Self {
             name: name.into(),
-            resized_width: 80,
+            resized_width: 160,
             innergaps,
             outergaps,
         }

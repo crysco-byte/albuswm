@@ -54,7 +54,7 @@ impl TileLayout {
     pub fn new<S: Into<String>>(name: S, innergaps: u32, outergaps: u32) -> TileLayout {
         Self {
             name: name.into(),
-            resized_width: 80,
+            resized_width: 160,
             innergaps,
             outergaps,
         }

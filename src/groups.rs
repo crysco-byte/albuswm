@@ -66,7 +66,7 @@ impl Group {
             return;
         }
         if let Some(layout) = self.layouts.focused_mut() {
-            layout.resize_right(&self.viewport, 80);
+            layout.resize_right(&self.viewport, 160);
         }
         self.perform_layout();
     }
@@ -76,7 +76,7 @@ impl Group {
             return;
         }
         if let Some(layout) = self.layouts.focused_mut() {
-            layout.resize_left(&self.viewport, 80);
+            layout.resize_left(&self.viewport, 160);
         }
         self.perform_layout();
     }
