@@ -5,11 +5,9 @@ use crate::x::{Connection, WindowGeometry, WindowId};
 use crate::Viewport;
 
 mod cmaster;
-mod stack;
 mod tile;
 
 pub use self::cmaster::CenterMaster;
-pub use self::stack::StackLayout;
 pub use self::tile::TileLayout;
 
 pub trait LayoutClone {

@@ -15,7 +15,6 @@ fn main() -> Result<()> {
     let layouts = layouts![
         TileLayout::new("tile", innergaps, outergaps),
         CenterMaster::new("c_master", innergaps, outergaps),
-        StackLayout::new("stack"),
     ];
 
     let (keys_bound_to_commands_with_group_bindings, groups) =
