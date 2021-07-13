@@ -7,6 +7,7 @@ use crate::Viewport;
 pub struct CenterMaster {
     name: String,
     resized_width: i16,
+    tile_resized_width: i16,
     outergaps: u32,
     innergaps: u32,
 }
@@ -32,7 +33,7 @@ impl Layout for CenterMaster {
         };
         if stack.len() < 3{
             let mut tile_layout: super::tile::TileLayout = super::tile::TileLayout::new("tmp_tl_cmaster", self.innergaps, self.outergaps);
-            tile_layout.resized_width = self.resized_width * -1;
+            tile_layout.resized_width = self.tile_resized_width;
             tile_layout.layout(connection, viewport, stack, &Some(*master_id));
         }else {
             self.c_master(connection, viewport, stack, master_id);
@@ -40,14 +41,20 @@ impl Layout for CenterMaster {
     }
 
     fn decrease_master(&mut self, viewport: &Viewport, resize_amount: i16) {
-        if !(self.resized_width > (viewport.width/6) as i16) {
+        if !(self.resized_width > (viewport.width/8) as i16) {
             self.resized_width += resize_amount;
+        }
+        if self.tile_resized_width > -((viewport.width / 2) as i16 - (viewport.width / 8) as i16) {
+            self.tile_resized_width -= resize_amount;
         }
     }
 
     fn increase_master(&mut self, viewport: &Viewport, resize_amount: i16) {
         if !(self.resized_width < -((viewport.width/14) as i16)) {
             self.resized_width -= resize_amount;
+        }
+        if self.tile_resized_width < ((viewport.width / 2) as i16 - (viewport.width / 8) as i16) {
+            self.tile_resized_width += resize_amount;
         }
     }
 }
@@ -59,6 +66,7 @@ impl CenterMaster {
             resized_width: 160,
             innergaps,
             outergaps,
+            tile_resized_width: 160
         }
     }
 
