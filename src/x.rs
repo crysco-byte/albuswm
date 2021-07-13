@@ -309,7 +309,6 @@ impl Connection {
     /// Sets the window's position and size.
     pub fn configure_window(&self, window_id: &WindowId, window_config: &WindowGeometry) {
         self.disable_window_tracking(window_id);
-        self.map_window(window_id);
         let values = [
             (xcb::CONFIG_WINDOW_X as u16, window_config.x),
             (xcb::CONFIG_WINDOW_Y as u16, window_config.y),
