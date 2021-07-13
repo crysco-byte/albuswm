@@ -125,8 +125,8 @@ pub mod parser {
             kb.close_focused,
             kb.focus_next,
             kb.focus_prev,
-            kb.resize_left,
-            kb.resize_right,
+            kb.decrease_master,
+            kb.increase_master,
             kb.layout_next,
         ]
     }
@@ -174,8 +174,8 @@ mod config_deserializer {
         pub close_focused: HashMap<String, Vec<String>>,
         pub focus_next: HashMap<String, Vec<String>>,
         pub focus_prev: HashMap<String, Vec<String>>,
-        pub resize_left: HashMap<String, Vec<String>>,
-        pub resize_right: HashMap<String, Vec<String>>,
+        pub decrease_master: HashMap<String, Vec<String>>,
+        pub increase_master: HashMap<String, Vec<String>>,
         pub layout_next: HashMap<String, Vec<String>>,
     }
 
@@ -223,8 +223,8 @@ mod lazy_commands {
             ActionTypes::CloseFocused => cmd::lazy::close_focused_window(),
             ActionTypes::FocusNext => cmd::lazy::focus_next(),
             ActionTypes::FocusPrev => cmd::lazy::focus_previous(),
-            ActionTypes::ResizeRight => cmd::lazy::resize_right(),
-            ActionTypes::ResizeLeft => cmd::lazy::resize_left(),
+            ActionTypes::ResizeRight => cmd::lazy::increase_master(),
+            ActionTypes::ResizeLeft => cmd::lazy::decrease_master(),
             ActionTypes::LayoutNext => cmd::lazy::layout_next(),
         }
     }
@@ -269,8 +269,8 @@ mod config_file_handler {
 close_focused = {mask=["Mod1"], key=["XK_w"]}
 focus_next = {mask=["Mod1"], key=["XK_j"]}
 focus_prev = {mask=["Mod1"], key=["XK_k"]}
-resize_left = {mask=["Mod1"], key=["XK_h"]}
-resize_right = {mask=["Mod1"], key=["XK_l"]}
+decrease_master = {mask=["Mod1"], key=["XK_h"]}
+increase_master = {mask=["Mod1"], key=["XK_l"]}
 layout_next = {mask=["Mod1"], key=["XK_Tab"]}
 
 [spawn_bindings]

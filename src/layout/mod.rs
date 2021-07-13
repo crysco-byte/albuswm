@@ -32,8 +32,8 @@ pub trait Layout: LayoutClone {
         stack: &Stack<WindowId>,
         master: &Option<WindowId>,
     );
-    fn resize_right(&mut self, viewport: &Viewport, resize_amount: i16);
-    fn resize_left(&mut self, viewport: &Viewport, resize_amount: i16);
+    fn decrease_master(&mut self, viewport: &Viewport, resize_amount: i16);
+    fn increase_master(&mut self, viewport: &Viewport, resize_amount: i16);
 }
 
 impl Clone for Box<dyn Layout> {

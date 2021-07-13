@@ -37,13 +37,13 @@ impl Layout for CenterMaster {
         }
     }
 
-    fn resize_left(&mut self, viewport: &Viewport, resize_amount: i16) {
+    fn decrease_master(&mut self, viewport: &Viewport, resize_amount: i16) {
         if !(self.resized_width > (viewport.width/6) as i16) {
             self.resized_width += resize_amount;
         }
     }
 
-    fn resize_right(&mut self, viewport: &Viewport, resize_amount: i16) {
+    fn increase_master(&mut self, viewport: &Viewport, resize_amount: i16) {
         if !(self.resized_width < -((viewport.width/14) as i16)) {
             self.resized_width -= resize_amount;
         }

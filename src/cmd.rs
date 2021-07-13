@@ -30,16 +30,16 @@ pub mod lazy {
         })
     }
 
-    pub fn resize_right() -> Command {
+    pub fn increase_master() -> Command {
         Rc::new(|ref mut wm| {
-            wm.group_mut().resize_right();
+            wm.group_mut().increase_master();
             Ok(())
         })
     }
 
-    pub fn resize_left() -> Command {
+    pub fn decrease_master() -> Command {
         Rc::new(|ref mut wm| {
-            wm.group_mut().resize_left();
+            wm.group_mut().decrease_master();
             Ok(())
         })
     }

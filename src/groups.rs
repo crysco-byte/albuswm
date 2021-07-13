@@ -61,22 +61,22 @@ impl Group {
         self.perform_layout();
     }
 
-    pub fn resize_right(&mut self) {
+    pub fn increase_master(&mut self) {
         if !self.active {
             return;
         }
         if let Some(layout) = self.layouts.focused_mut() {
-            layout.resize_right(&self.viewport, 160);
+            layout.increase_master(&self.viewport, 160);
         }
         self.perform_layout();
     }
 
-    pub fn resize_left(&mut self) {
+    pub fn decrease_master(&mut self) {
         if !self.active {
             return;
         }
         if let Some(layout) = self.layouts.focused_mut() {
-            layout.resize_left(&self.viewport, 160);
+            layout.decrease_master(&self.viewport, 160);
         }
         self.perform_layout();
     }
