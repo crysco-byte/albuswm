@@ -335,6 +335,7 @@ pub fn safe_xk_parse(string: &str) -> Result<u32, ()> {
         "XK_9" => Ok(keysym::XK_9),
         "XK_Return" => Ok(keysym::XK_Return),
         "XK_Tab" => Ok(keysym::XK_Tab),
+        "XK_space" => Ok(keysym::XK_space),
         _ => Err(()),
     }
 }
