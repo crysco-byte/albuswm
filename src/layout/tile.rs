@@ -6,7 +6,7 @@ use crate::Viewport;
 #[derive(Clone)]
 pub struct TileLayout {
     name: String,
-    resized_width: i16,
+    pub resized_width: i16,
     outergaps: u32,
     innergaps: u32,
 }
@@ -60,7 +60,7 @@ impl TileLayout {
         }
     }
 
-    fn tile(
+    pub fn tile(
         &self,
         connection: &Connection,
         viewport: &Viewport,

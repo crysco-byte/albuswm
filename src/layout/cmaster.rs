@@ -30,9 +30,11 @@ impl Layout for CenterMaster {
         } else {
             master.as_ref().unwrap()
         };
-        if stack.len() < 2 {
-            super::configure_single_window(connection, viewport, master_id);
-        } else {
+        if stack.len() < 3{
+            let mut tile_layout: super::tile::TileLayout = super::tile::TileLayout::new("tmp_tl_cmaster", self.innergaps, self.outergaps);
+            tile_layout.resized_width = self.resized_width * -1;
+            tile_layout.layout(connection, viewport, stack, &Some(*master_id));
+        }else {
             self.c_master(connection, viewport, stack, master_id);
         }
     }
