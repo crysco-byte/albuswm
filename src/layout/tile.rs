@@ -65,13 +65,13 @@ impl TileLayout {
         connection: &Connection,
         viewport: &Viewport,
         stack: &Stack<WindowId>,
-        focused_id: &WindowId,
+        master_id: &WindowId,
     ) {
-        self.configure_focused_window(connection, viewport, focused_id);
+        self.configure_master_window(connection, viewport, master_id);
         let mut accumulator: u32 = 0;
         for window_id in stack.iter() {
-            if window_id != focused_id {
-                self.configure_unfocused_window(
+            if window_id != master_id {
+                self.configure_normal_window(
                     accumulator,
                     connection,
                     stack,
@@ -83,7 +83,7 @@ impl TileLayout {
         }
     }
 
-    fn configure_unfocused_window(
+    fn configure_normal_window(
         &self,
         i: u32,
         connection: &Connection,
@@ -91,11 +91,11 @@ impl TileLayout {
         viewport: &Viewport,
         window_id: &WindowId,
     ) {
-        let unfocused_geometry: WindowGeometry = self.get_unfocused_geometry(i, stack, viewport);
-        connection.configure_window(window_id, &unfocused_geometry);
+        let normal_geometry: WindowGeometry = self.get_normal_geometry(i, stack, viewport);
+        connection.configure_window(window_id, &normal_geometry);
     }
 
-    fn configure_focused_window(
+    fn configure_master_window(
         &self,
         connection: &Connection,
         viewport: &Viewport,
@@ -105,7 +105,7 @@ impl TileLayout {
         connection.configure_window(window_id, &focused_geometry);
     }
 
-    fn get_unfocused_geometry(
+    fn get_normal_geometry(
         &self,
         i: u32,
         stack: &Stack<WindowId>,
