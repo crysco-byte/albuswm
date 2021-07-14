@@ -129,11 +129,7 @@ impl Group {
     pub fn remove_window(&mut self, window_id: &WindowId) -> WindowId {
         info!("Removing window from group {}: {}", self.name(), window_id);
         let removed: WindowId = self.stack.remove(|w| w == window_id);
-        if !self.stack.is_empty() {
-            self.master = Some(*self.stack.focused().unwrap())
-        } else {
-            self.master = None
-        }
+        self.change_master();
         self.perform_layout();
         removed
     }
@@ -145,11 +141,7 @@ impl Group {
             self.stack.focused()
         );
         let removed: Option<WindowId> = self.stack.remove_focused();
-        if !self.stack.is_empty() {
-            self.master = Some(*self.stack.focused().unwrap())
-        } else {
-            self.master = None
-        }
+        self.change_master();
         self.perform_layout();
         removed.map(|window| {
             self.connection.disable_window_tracking(&window);
@@ -169,9 +161,10 @@ impl Group {
         self.perform_layout();
     }
 
-    pub fn close_focused(&self) {
+    pub fn close_focused(&mut self) {
         if let Some(window_id) = self.stack.focused() {
             self.connection.close_window(window_id);
+            self.change_master();
         }
     }
 
