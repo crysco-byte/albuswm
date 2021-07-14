@@ -278,7 +278,8 @@ spawns = [
     {command=["pkill"], args=["Xorg"], mask=["Mod1"], key=["XK_q"]},
     {command=["qutebrowser"], args=[""], mask=["Mod1"], key=["XK_o"]},
     {command=["alacritty"], args=[""], mask=["Mod1"], key=["XK_Return"]},
-    {command=["rofi"], args=["-combi-modi", "drun, run, ssh", "-theme", "slate", "-show", "combi", "-icon-theme", "Papirus", "-show-icons"], mask=["Mod1"], key=["XK_p"]}
+    {command=["emacs"], args=[""], mask=["Mod1"], key=["XK_space"]},
+    {command=["dmenu_run"], args=[""], mask=["Mod1"], key=["XK_p"]}
 ]
 
 [group_definitions]
