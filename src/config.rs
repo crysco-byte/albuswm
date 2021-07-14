@@ -284,8 +284,8 @@ spawns = [
 
 [group_definitions]
 groups = [
-    {mask = "Mod1", key="XK_a", name="alpha", layout="tile"},
-    {mask = "Mod1", key="XK_s", name="beta", layout="tile"},
+    {mask = "Mod1", key="XK_a", name="alpha", layout="cmaster"},
+    {mask = "Mod1", key="XK_s", name="beta", layout="cmaster"},
     {mask = "Mod1", key="XK_d", name="gamma", layout="tile"},
     {mask = "Mod1", key="XK_f", name="delta", layout="tile"},
 ]
