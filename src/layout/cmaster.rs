@@ -1,8 +1,9 @@
+use self::even_stack_calculation::EvenStackCalculation;
+use self::odd_stack_calculation::OddStackCalculation;
 use crate::layout::Layout;
 use crate::stack::Stack;
 use crate::x::{Connection, WindowGeometry, WindowId};
 use crate::Viewport;
-
 #[derive(Clone)]
 pub struct CenterMaster {
     name: String,
@@ -31,17 +32,18 @@ impl Layout for CenterMaster {
         } else {
             master.as_ref().unwrap()
         };
-        if stack.len() < 3{
-            let mut tile_layout: super::tile::TileLayout = super::tile::TileLayout::new("tmp_tl_cmaster", self.innergaps, self.outergaps);
+        if stack.len() < 3 {
+            let mut tile_layout: super::tile::TileLayout =
+                super::tile::TileLayout::new("tmp_tl_cmaster", self.innergaps, self.outergaps);
             tile_layout.resized_width = self.tile_resized_width;
             tile_layout.layout(connection, viewport, stack, &Some(*master_id));
-        }else {
+        } else {
             self.c_master(connection, viewport, stack, master_id);
         }
     }
 
     fn decrease_master(&mut self, viewport: &Viewport, resize_amount: i16) {
-        if !(self.resized_width > (viewport.width/8) as i16) {
+        if !(self.resized_width > (viewport.width / 8) as i16) {
             self.resized_width += resize_amount;
         }
         if self.tile_resized_width > -((viewport.width / 2) as i16 - (viewport.width / 8) as i16) {
@@ -50,7 +52,7 @@ impl Layout for CenterMaster {
     }
 
     fn increase_master(&mut self, viewport: &Viewport, resize_amount: i16) {
-        if !(self.resized_width < -((viewport.width/14) as i16)) {
+        if !(self.resized_width < -((viewport.width / 14) as i16)) {
             self.resized_width -= resize_amount;
         }
         if self.tile_resized_width < ((viewport.width / 2) as i16 - (viewport.width / 8) as i16) {
@@ -66,7 +68,7 @@ impl CenterMaster {
             resized_width: 160,
             innergaps,
             outergaps,
-            tile_resized_width: 160
+            tile_resized_width: 160,
         }
     }
 
@@ -116,43 +118,16 @@ impl CenterMaster {
         viewport: &Viewport,
     ) -> WindowGeometry {
         let master_width: u32 = viewport.width / 2 + viewport.width / 16;
-        let mut width: u32 = (self.resized_width + ((viewport.width - master_width) / 2) as i16) as u32;
         let stack_length: u32 = stack.len() as u32;
-        let height;
-        let y : u32;
-        let x : u32;
         if i % 2 == 0 {
-            let left_stack_len: u32 = stack_length / 2;
-            height = (viewport.height - self.outergaps*2 + self.innergaps) / left_stack_len;
-            x = self.outergaps;
-            if stack.len() % 2 == 0 {
-                y = i * (viewport.height - self.outergaps * 2 + self.innergaps) / stack_length;
-            } else {
-                y = i * (viewport.height - self.outergaps * 2 + self.innergaps)  / (stack_length - 1);
-            }
+            return self.calculate_even_stack_geometry(stack_length, viewport, master_width, i);
         } else {
-            let right_stack_len: u32 = (stack_length - 1) / 2;
-            x = (self.resized_width * -1
-                + (master_width + (viewport.width - master_width) / 2) as i16)
-                as u32
-                + self.outergaps;
-            height = (viewport.height - self.outergaps*2 + self.innergaps) / right_stack_len;
-            width -= self.outergaps * 2;
-            if stack.len() % 2 == 0 {
-                y = if right_stack_len < 2 {
-                    0
-                } else {
-                    (i - 1) * (viewport.height - self.outergaps *2 + self.innergaps)  / (stack_length - 2)
-                };
-            } else {
-                y = (i - 1) * (viewport.height - self.outergaps * 2 + self.innergaps)  / (stack_length - 1);
-            }
-        }
-        WindowGeometry {
-            x,
-            y: y + self.outergaps,
-            width,
-            height: height - self.innergaps,
+            return self.calculate_odd_stack_stack_geometry(
+                &stack_length,
+                viewport,
+                i,
+                master_width,
+            );
         }
     }
 
@@ -166,6 +141,133 @@ impl CenterMaster {
             y: self.outergaps,
             width,
             height: viewport.height - self.outergaps * 2,
+        }
+    }
+}
+
+mod even_stack_calculation {
+    use super::*;
+    pub trait EvenStackCalculation {
+        fn calculate_even_stack_geometry(
+            &self,
+            stack_length: u32,
+            viewport: &Viewport,
+            master_width: u32,
+            i: u32,
+        ) -> WindowGeometry;
+        fn calculate_even_stack_heigth(&self, viewport: &Viewport, left_stack_len: u32) -> u32;
+        fn calculate_even_stack_y(&self, viewport: &Viewport, stack_length: u32, i: u32) -> u32;
+    }
+
+    impl EvenStackCalculation for CenterMaster {
+        fn calculate_even_stack_geometry(
+            &self,
+            stack_length: u32,
+            viewport: &Viewport,
+            master_width: u32,
+            i: u32,
+        ) -> WindowGeometry {
+            let left_stack_len: u32 = stack_length / 2;
+            WindowGeometry {
+                x: self.outergaps,
+                y: self.calculate_even_stack_y(viewport, stack_length, i),
+                width: (self.resized_width + ((viewport.width - master_width) / 2) as i16) as u32,
+                height: self.calculate_even_stack_heigth(viewport, left_stack_len),
+            }
+        }
+
+        fn calculate_even_stack_heigth(&self, viewport: &Viewport, left_stack_len: u32) -> u32 {
+            (viewport.height - self.outergaps * 2 + self.innergaps) / left_stack_len
+                - self.innergaps
+        }
+
+        fn calculate_even_stack_y(&self, viewport: &Viewport, stack_length: u32, i: u32) -> u32 {
+            if stack_length % 2 == 0 {
+                return i * (viewport.height - self.outergaps * 2 + self.innergaps) / stack_length
+                    + self.outergaps;
+            } else {
+                return i * (viewport.height - self.outergaps * 2 + self.innergaps)
+                    / (stack_length - 1)
+                    + self.outergaps;
+            }
+        }
+    }
+}
+
+mod odd_stack_calculation {
+    use super::*;
+    pub trait OddStackCalculation {
+        fn calculate_odd_stack_stack_geometry(
+            &self,
+            stack_length: &u32,
+            viewport: &Viewport,
+            i: u32,
+            master_width: u32,
+        ) -> WindowGeometry;
+        fn calculate_odd_stack_x(&self, master_width: u32, viewport: &Viewport) -> u32;
+        fn calculate_odd_stack_width(&self, viewport: &Viewport, master_width: u32) -> u32;
+        fn calculate_odd_stack_height(&self, viewport: &Viewport, right_stack_len: u32) -> u32;
+        fn calculate_odd_stack_y(
+            &self,
+            stack_length: &u32,
+            right_stack_len: u32,
+            viewport: &Viewport,
+            i: u32,
+        ) -> u32;
+    }
+
+    impl OddStackCalculation for CenterMaster {
+        fn calculate_odd_stack_stack_geometry(
+            &self,
+            stack_length: &u32,
+            viewport: &Viewport,
+            i: u32,
+            master_width: u32,
+        ) -> WindowGeometry {
+            let right_stack_len: u32 = (stack_length - 1) / 2;
+            WindowGeometry {
+                x: self.calculate_odd_stack_x(master_width, viewport),
+                y: self.calculate_odd_stack_y(stack_length, right_stack_len, viewport, i),
+                width: self.calculate_odd_stack_width(viewport, master_width),
+                height: self.calculate_odd_stack_height(viewport, right_stack_len),
+            }
+        }
+
+        fn calculate_odd_stack_x(&self, master_width: u32, viewport: &Viewport) -> u32 {
+            (self.resized_width * -1 + (master_width + (viewport.width - master_width) / 2) as i16)
+                as u32
+                + self.outergaps
+        }
+
+        fn calculate_odd_stack_width(&self, viewport: &Viewport, master_width: u32) -> u32 {
+            (self.resized_width + ((viewport.width - master_width) / 2) as i16) as u32
+        }
+
+        fn calculate_odd_stack_height(&self, viewport: &Viewport, right_stack_len: u32) -> u32 {
+            (viewport.height - self.outergaps * 2 + self.innergaps) / right_stack_len
+                - self.innergaps
+        }
+
+        fn calculate_odd_stack_y(
+            &self,
+            stack_length: &u32,
+            right_stack_len: u32,
+            viewport: &Viewport,
+            i: u32,
+        ) -> u32 {
+            let y: u32;
+            if stack_length % 2 == 0 {
+                y = if right_stack_len < 2 {
+                    0
+                } else {
+                    (i - 1) * (viewport.height - self.outergaps * 2 + self.innergaps)
+                        / (stack_length - 2)
+                };
+            } else {
+                y = (i - 1) * (viewport.height - self.outergaps * 2 + self.innergaps)
+                    / (stack_length - 1);
+            }
+            y + self.outergaps
         }
     }
 }
