@@ -16,7 +16,8 @@ pub mod parser {
     pub fn get_gaps() -> (Innergaps, Outergaps) {
         null_check_config();
         let config: String = config_file_handler::read_config_file();
-        let deserialized_config: config_deserializer::Config = config_deserializer::deserialize_config(config);
+        let deserialized_config: config_deserializer::Config =
+            config_deserializer::deserialize_config(config);
         (
             deserialized_config.gaps.inner,
             deserialized_config.gaps.outer,
@@ -41,7 +42,7 @@ pub mod parser {
             if let Ok(parsed) = parse_group_defintions_from_config(data_group.clone()) {
                 result.push(parsed);
             } else {
-                error!("Could not group definitions: {:?}", data_group);
+                error!("Could not parse this group definition: {:?}", data_group);
                 continue;
             }
         }
@@ -68,8 +69,10 @@ pub mod parser {
     }
 
     fn get_parsed_bindings(parsed_config: config_deserializer::Config) -> Vec<BoundCommand> {
-        let mut key_bindings: Vec<BoundCommand> = parse_keybindings_from_config(parsed_config.key_bindings);
-        let spawn_bindings: Vec<BoundCommand> = parse_spawn_bindings_from_config(parsed_config.spawn_bindings);
+        let mut key_bindings: Vec<BoundCommand> =
+            parse_keybindings_from_config(parsed_config.key_bindings);
+        let spawn_bindings: Vec<BoundCommand> =
+            parse_spawn_bindings_from_config(parsed_config.spawn_bindings);
         key_bindings.extend(spawn_bindings);
         key_bindings
     }
@@ -78,7 +81,8 @@ pub mod parser {
         key_bindings: config_deserializer::KeyBindingDefinition,
     ) -> Vec<BoundCommand> {
         let mut result: Vec<BoundCommand> = Vec::new();
-        let kb_to_vec: Vec<HashMap<String, Vec<String>>> = convert_keybindings_into_vector(key_bindings);
+        let kb_to_vec: Vec<HashMap<String, Vec<String>>> =
+            convert_keybindings_into_vector(key_bindings);
         for (i, data_group) in kb_to_vec.into_iter().enumerate() {
             if let Ok(parsed_mask_and_key) = key_parse::parse_mask_and_key(
                 data_group["mask"].clone(),
@@ -252,8 +256,10 @@ mod config_file_handler {
 
     pub fn read_config_file() -> String {
         let xdg_dirs: BaseDirectories = BaseDirectories::with_prefix("albus").unwrap();
-        let config_file_path: std::path::PathBuf = xdg_dirs.find_config_file("config.toml").unwrap();
-        let mut file: fs::File = fs::File::open(config_file_path).expect("Could not open config file");
+        let config_file_path: std::path::PathBuf =
+            xdg_dirs.find_config_file("config.toml").unwrap();
+        let mut file: fs::File =
+            fs::File::open(config_file_path).expect("Could not open config file");
         let mut contents: String = String::new();
         file.read_to_string(&mut contents).unwrap();
         contents

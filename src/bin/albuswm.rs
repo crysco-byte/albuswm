@@ -17,8 +17,10 @@ fn main() -> Result<()> {
         CenterMaster::new("c_master", innergaps, outergaps),
     ];
 
-    let (keys_bound_to_commands_with_group_bindings, groups):(Vec<config::parser::BoundCommand>, Vec<albuswm::GroupBuilder>) =
-        gen_groups(keys_bound_to_commands, group_defs);
+    let (keys_bound_to_commands_with_group_bindings, groups): (
+        Vec<config::parser::BoundCommand>,
+        Vec<albuswm::GroupBuilder>,
+    ) = gen_groups(keys_bound_to_commands, group_defs);
 
     Albus::new(keys_bound_to_commands_with_group_bindings, groups, &layouts)?.run();
 

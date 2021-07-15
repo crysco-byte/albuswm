@@ -71,13 +71,7 @@ impl TileLayout {
         let mut accumulator: u32 = 0;
         for window_id in stack.iter() {
             if window_id != master_id {
-                self.configure_normal_window(
-                    accumulator,
-                    connection,
-                    stack,
-                    viewport,
-                    window_id,
-                );
+                self.configure_normal_window(accumulator, connection, stack, viewport, window_id);
                 accumulator += 1;
             }
         }

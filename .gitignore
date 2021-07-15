@@ -1,2 +1,4 @@
 /target
 ex.toml
+*.org
+*.core

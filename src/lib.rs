@@ -9,6 +9,7 @@ pub mod config;
 mod groups;
 mod keys;
 pub mod layout;
+mod round;
 pub mod screen;
 mod stack;
 mod x;
@@ -203,7 +204,8 @@ impl Albus {
             return;
         }
         if let Some(removed) = self.group_mut().remove_focused() {
-            let new_group: Option<&mut Group> = self.groups.iter_mut().find(|group| group.name() == name);
+            let new_group: Option<&mut Group> =
+                self.groups.iter_mut().find(|group| group.name() == name);
             match new_group {
                 Some(new_group) => {
                     new_group.add_window(removed);
