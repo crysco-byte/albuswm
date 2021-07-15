@@ -9,7 +9,6 @@ pub mod config;
 mod groups;
 mod keys;
 pub mod layout;
-mod round;
 pub mod screen;
 mod stack;
 mod x;
