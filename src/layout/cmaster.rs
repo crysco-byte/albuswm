@@ -240,7 +240,7 @@ mod odd_stack_calculation {
         }
 
         fn calculate_odd_stack_width(&self, viewport: &Viewport, master_width: u32) -> u32 {
-            (self.resized_width + ((viewport.width - master_width) / 2) as i16) as u32
+            (self.resized_width + ((viewport.width - master_width) / 2) as i16) as u32 - self.outergaps * 2
         }
 
         fn calculate_odd_stack_height(&self, viewport: &Viewport, right_stack_len: u32) -> u32 {
