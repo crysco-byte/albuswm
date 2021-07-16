@@ -1,5 +1,5 @@
-use self::even_stack_calculation::EvenStackCalculation;
-use self::odd_stack_calculation::OddStackCalculation;
+use self::left_stack::LeftStackCalculation;
+use self::right_stack::RightStackCalculation;
 use crate::layout::Layout;
 use crate::stack::Stack;
 use crate::x::{Connection, WindowGeometry, WindowId};
@@ -120,9 +120,9 @@ impl CenterMaster {
         let master_width: u32 = viewport.width / 2 + viewport.width / 16;
         let stack_length: u32 = stack.len() as u32;
         if i % 2 == 0 {
-            return self.calculate_even_stack_geometry(stack_length, viewport, master_width, i);
+            return self.calculate_left_stack_geometry(stack_length, viewport, master_width, i);
         } else {
-            return self.calculate_odd_stack_stack_geometry(
+            return self.calculate_right_stack_geometry(
                 &stack_length,
                 viewport,
                 i,
@@ -145,22 +145,22 @@ impl CenterMaster {
     }
 }
 
-mod even_stack_calculation {
+mod left_stack {
     use super::*;
-    pub trait EvenStackCalculation {
-        fn calculate_even_stack_geometry(
+    pub trait LeftStackCalculation {
+        fn calculate_left_stack_geometry(
             &self,
             stack_length: u32,
             viewport: &Viewport,
             master_width: u32,
             i: u32,
         ) -> WindowGeometry;
-        fn calculate_even_stack_heigth(&self, viewport: &Viewport, left_stack_len: u32) -> u32;
-        fn calculate_even_stack_y(&self, viewport: &Viewport, stack_length: u32, i: u32) -> u32;
+        fn calculate_left_stack_heigth(&self, viewport: &Viewport, left_stack_len: u32) -> u32;
+        fn calculate_left_stack_y(&self, viewport: &Viewport, stack_length: u32, i: u32) -> u32;
     }
 
-    impl EvenStackCalculation for CenterMaster {
-        fn calculate_even_stack_geometry(
+    impl LeftStackCalculation for CenterMaster {
+        fn calculate_left_stack_geometry(
             &self,
             stack_length: u32,
             viewport: &Viewport,
@@ -170,18 +170,18 @@ mod even_stack_calculation {
             let left_stack_len: u32 = stack_length / 2;
             WindowGeometry {
                 x: self.outergaps,
-                y: self.calculate_even_stack_y(viewport, stack_length, i),
+                y: self.calculate_left_stack_y(viewport, stack_length, i),
                 width: (self.resized_width + ((viewport.width - master_width) / 2) as i16) as u32,
-                height: self.calculate_even_stack_heigth(viewport, left_stack_len),
+                height: self.calculate_left_stack_heigth(viewport, left_stack_len),
             }
         }
 
-        fn calculate_even_stack_heigth(&self, viewport: &Viewport, left_stack_len: u32) -> u32 {
+        fn calculate_left_stack_heigth(&self, viewport: &Viewport, left_stack_len: u32) -> u32 {
             (viewport.height - self.outergaps * 2 + self.innergaps) / left_stack_len
                 - self.innergaps
         }
 
-        fn calculate_even_stack_y(&self, viewport: &Viewport, stack_length: u32, i: u32) -> u32 {
+        fn calculate_left_stack_y(&self, viewport: &Viewport, stack_length: u32, i: u32) -> u32 {
             if stack_length % 2 == 0 {
                 return i * (viewport.height - self.outergaps * 2 + self.innergaps) / stack_length
                     + self.outergaps;
@@ -194,20 +194,20 @@ mod even_stack_calculation {
     }
 }
 
-mod odd_stack_calculation {
+mod right_stack {
     use super::*;
-    pub trait OddStackCalculation {
-        fn calculate_odd_stack_stack_geometry(
+    pub trait RightStackCalculation {
+        fn calculate_right_stack_geometry(
             &self,
             stack_length: &u32,
             viewport: &Viewport,
             i: u32,
             master_width: u32,
         ) -> WindowGeometry;
-        fn calculate_odd_stack_x(&self, master_width: u32, viewport: &Viewport) -> u32;
-        fn calculate_odd_stack_width(&self, viewport: &Viewport, master_width: u32) -> u32;
-        fn calculate_odd_stack_height(&self, viewport: &Viewport, right_stack_len: u32) -> u32;
-        fn calculate_odd_stack_y(
+        fn calculate_right_stack_x(&self, master_width: u32, viewport: &Viewport) -> u32;
+        fn calculate_right_stack_width(&self, viewport: &Viewport, master_width: u32) -> u32;
+        fn calculate_right_stack_height(&self, viewport: &Viewport, right_stack_len: u32) -> u32;
+        fn calculate_right_stack_y(
             &self,
             stack_length: &u32,
             right_stack_len: u32,
@@ -216,8 +216,8 @@ mod odd_stack_calculation {
         ) -> u32;
     }
 
-    impl OddStackCalculation for CenterMaster {
-        fn calculate_odd_stack_stack_geometry(
+    impl RightStackCalculation for CenterMaster {
+        fn calculate_right_stack_geometry(
             &self,
             stack_length: &u32,
             viewport: &Viewport,
@@ -226,29 +226,29 @@ mod odd_stack_calculation {
         ) -> WindowGeometry {
             let right_stack_len: u32 = (stack_length - 1) / 2;
             WindowGeometry {
-                x: self.calculate_odd_stack_x(master_width, viewport),
-                y: self.calculate_odd_stack_y(stack_length, right_stack_len, viewport, i),
-                width: self.calculate_odd_stack_width(viewport, master_width),
-                height: self.calculate_odd_stack_height(viewport, right_stack_len),
+                x: self.calculate_right_stack_x(master_width, viewport),
+                y: self.calculate_right_stack_y(stack_length, right_stack_len, viewport, i),
+                width: self.calculate_right_stack_width(viewport, master_width),
+                height: self.calculate_right_stack_height(viewport, right_stack_len),
             }
         }
 
-        fn calculate_odd_stack_x(&self, master_width: u32, viewport: &Viewport) -> u32 {
+        fn calculate_right_stack_x(&self, master_width: u32, viewport: &Viewport) -> u32 {
             (self.resized_width * -1 + (master_width + (viewport.width - master_width) / 2) as i16)
                 as u32
                 + self.outergaps
         }
 
-        fn calculate_odd_stack_width(&self, viewport: &Viewport, master_width: u32) -> u32 {
+        fn calculate_right_stack_width(&self, viewport: &Viewport, master_width: u32) -> u32 {
             (self.resized_width + ((viewport.width - master_width) / 2) as i16) as u32 - self.outergaps * 2
         }
 
-        fn calculate_odd_stack_height(&self, viewport: &Viewport, right_stack_len: u32) -> u32 {
+        fn calculate_right_stack_height(&self, viewport: &Viewport, right_stack_len: u32) -> u32 {
             (viewport.height - self.outergaps * 2 + self.innergaps) / right_stack_len
                 - self.innergaps
         }
 
-        fn calculate_odd_stack_y(
+        fn calculate_right_stack_y(
             &self,
             stack_length: &u32,
             right_stack_len: u32,
