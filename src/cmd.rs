@@ -1,8 +1,8 @@
-use crate::Albus;
+use crate::Volan;
 use crate::Result;
 use std::rc::Rc;
 
-pub type Command = Rc<dyn Fn(&mut Albus) -> Result<()>>;
+pub type Command = Rc<dyn Fn(&mut Volan) -> Result<()>>;
 
 /// Lazy-functions which return a `Command` to do the requested action.
 pub mod lazy {

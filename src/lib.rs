@@ -39,9 +39,9 @@ pub mod keysym {
 pub fn intiailize_logger() -> Result<()> {
     log_panics::init();
 
-    let xdg_dirs: xdg::BaseDirectories = xdg::BaseDirectories::with_prefix("albus")?;
+    let xdg_dirs: xdg::BaseDirectories = xdg::BaseDirectories::with_prefix("volan")?;
     let log_path: std::path::PathBuf = xdg_dirs
-        .place_data_file("albus.log")
+        .place_data_file("volan.log")
         .context("Could not create log file")?;
 
     fern::Dispatch::new()
@@ -121,14 +121,14 @@ struct Dock {
     strut_partial: Option<StrutPartial>,
 }
 
-pub struct Albus {
+pub struct Volan {
     connection: Rc<Connection>,
     keys: KeyHandlers,
     groups: Stack<Group>,
     screen: Screen,
 }
 
-impl Albus {
+impl Volan {
     pub fn new<K>(keys: K, groups: Vec<GroupBuilder>, layouts: &[Box<dyn Layout>]) -> Result<Self>
     where
         K: Into<KeyHandlers>,
@@ -144,7 +144,7 @@ impl Albus {
                 .collect::<Vec<Group>>(),
         );
 
-        let mut wm: Albus = Albus {
+        let mut wm: Volan = Volan {
             keys,
             groups,
             connection: connection.clone(),

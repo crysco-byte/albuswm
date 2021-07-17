@@ -244,7 +244,7 @@ mod config_file_handler {
     use xdg::BaseDirectories;
 
     pub fn create_default_config_file() {
-        let xdg_dirs: BaseDirectories = BaseDirectories::with_prefix("albus").unwrap();
+        let xdg_dirs: BaseDirectories = BaseDirectories::with_prefix("volan").unwrap();
         let config_path: std::path::PathBuf = xdg_dirs
             .place_config_file("config.toml")
             .expect("Could not create config file");
@@ -255,7 +255,7 @@ mod config_file_handler {
     }
 
     pub fn read_config_file() -> String {
-        let xdg_dirs: BaseDirectories = BaseDirectories::with_prefix("albus").unwrap();
+        let xdg_dirs: BaseDirectories = BaseDirectories::with_prefix("volan").unwrap();
         let config_file_path: std::path::PathBuf =
             xdg_dirs.find_config_file("config.toml").unwrap();
         let mut file: fs::File =
@@ -266,7 +266,7 @@ mod config_file_handler {
     }
 
     pub fn config_file_exists() -> bool {
-        let xdg_dirs: BaseDirectories = BaseDirectories::with_prefix("albus").unwrap();
+        let xdg_dirs: BaseDirectories = BaseDirectories::with_prefix("volan").unwrap();
         xdg_dirs.find_config_file("config.toml").is_some()
     }
 

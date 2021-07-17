@@ -1,10 +1,10 @@
 [package]
-name = "albuswm"
+name = "volanwm"
 version = "0.2.0"
 edition = "2018"
 
 [[bin]]
-name = "albuswm"
+name = "volanwm"
 doc = false
 
 [dependencies]
