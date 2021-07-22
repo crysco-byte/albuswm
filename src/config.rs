@@ -81,7 +81,7 @@ pub mod parser {
         let mut result: Vec<BoundCommand> = Vec::new();
         for key_binding in key_bindings {
             if let Ok(parsed_mask_and_key) = key_parse::parse_mask_and_key(
-                key_binding["mask"].clone(),
+                key_binding["masks"].clone(),
                 key_binding["key"].clone(),
             ) {
                 let lazy_command: Command = lazy_commands::get_cmd_based_on_action(
