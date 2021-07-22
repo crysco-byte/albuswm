@@ -6,28 +6,28 @@ use crate::stack::Stack;
 use crate::x::{Connection, WindowId};
 
 #[derive(Clone)]
-pub struct GroupBuilder {
+pub struct WorkSpaceBuilder {
     name: String,
     default_layout: String,
 }
 
-impl GroupBuilder {
-    pub fn new<S1, S2>(name: S1, default_layout: S2) -> GroupBuilder
+impl WorkSpaceBuilder {
+    pub fn new<S1, S2>(name: S1, default_layout: S2) -> WorkSpaceBuilder
     where
         S1: Into<String>,
         S2: Into<String>,
     {
-        GroupBuilder {
+        WorkSpaceBuilder {
             name: name.into(),
             default_layout: default_layout.into(),
         }
     }
 
-    pub fn build(self, connection: Rc<Connection>, layouts: Vec<Box<dyn Layout>>) -> Group {
+    pub fn build(self, connection: Rc<Connection>, layouts: Vec<Box<dyn Layout>>) -> WorkSpace {
         let mut layouts_stack: Stack<Box<dyn super::layout::Layout>> = Stack::from(layouts);
         layouts_stack.focus(|layout| layout.name() == self.default_layout);
 
-        Group {
+        WorkSpace {
             connection,
             name: self.name.clone(),
             active: false,
@@ -39,7 +39,7 @@ impl GroupBuilder {
     }
 }
 
-pub struct Group {
+pub struct WorkSpace {
     name: String,
     connection: Rc<Connection>,
     active: bool,
@@ -49,13 +49,13 @@ pub struct Group {
     master: Option<WindowId>,
 }
 
-impl Group {
+impl WorkSpace {
     pub fn name(&self) -> &str {
         &self.name
     }
 
     pub fn activate(&mut self, viewport: Viewport) {
-        info!("Activating group: {}", self.name());
+        info!("Activating workspace: {}", self.name());
         self.active = true;
         self.viewport = viewport;
         self.perform_layout();
@@ -87,7 +87,7 @@ impl Group {
     }
 
     pub fn deactivate(&mut self) {
-        info!("Deactivating group: {}", self.name());
+        info!("Deactivating workspace: {}", self.name());
         for window_id in self.stack.iter() {
             self.connection.disable_window_tracking(window_id);
             self.connection.unmap_window(window_id);
@@ -111,7 +111,7 @@ impl Group {
             layout.layout(&self.connection, &self.viewport, &self.stack, &self.master)
         }
 
-        // Tell X to focus the focused window for this group, or to unset
+        // Tell X to focus the focused window for this workspace, or to unset
         // it's focus if we have no windows.
         match self.stack.focused() {
             Some(window_id) => self.connection.focus_window(window_id),
@@ -120,14 +120,14 @@ impl Group {
     }
 
     pub fn add_window(&mut self, window_id: WindowId) {
-        info!("Adding window to group {}: {}", self.name(), window_id);
+        info!("Adding window to workspace {}: {}", self.name(), window_id);
         self.stack.push(window_id);
         self.master = Some(window_id);
         self.perform_layout();
     }
 
     pub fn remove_window(&mut self, window_id: &WindowId) -> WindowId {
-        info!("Removing window from group {}: {}", self.name(), window_id);
+        info!("Removing window from workspace {}: {}", self.name(), window_id);
         let removed: WindowId = self.stack.remove(|w| w == window_id);
         self.change_master();
         self.perform_layout();
@@ -136,7 +136,7 @@ impl Group {
 
     pub fn remove_focused(&mut self) -> Option<WindowId> {
         info!(
-            "Removing focused window from group {}: {:?}",
+            "Removing focused window from workspace {}: {:?}",
             self.name(),
             self.stack.focused()
         );
@@ -156,7 +156,7 @@ impl Group {
     }
 
     pub fn focus(&mut self, window_id: &WindowId) {
-        info!("Focusing window in group {}: {}", self.name(), window_id);
+        info!("Focusing window in workspace {}: {}", self.name(), window_id);
         self.stack.focus(|id| id == window_id);
         self.perform_layout();
     }
@@ -171,7 +171,7 @@ impl Group {
     pub fn focus_next(&mut self) {
         self.stack.focus_next();
         info!(
-            "Focusing next window in group {}: {:?}",
+            "Focusing next window in workspace {}: {:?}",
             self.name(),
             self.stack.focused()
         );
@@ -183,7 +183,7 @@ impl Group {
         self.stack.focus_previous();
         self.change_master();
         info!(
-            "Focusing previous window in group {}: {:?}",
+            "Focusing previous window in workspace {}: {:?}",
             self.name(),
             self.stack.focused()
         );
@@ -193,7 +193,7 @@ impl Group {
     pub fn layout_next(&mut self) {
         self.layouts.focus_next();
         info!(
-            "Switching to next layout in group {}: {:?}",
+            "Switching to next layout in workspace {}: {:?}",
             self.name(),
             self.layouts.focused()
         );
@@ -203,7 +203,7 @@ impl Group {
     pub fn layout_previous(&mut self) {
         self.layouts.focus_next();
         info!(
-            "Switching to previous layout in group {}: {:?}",
+            "Switching to previous layout in workspace {}: {:?}",
             self.name(),
             self.layouts.focused()
         );

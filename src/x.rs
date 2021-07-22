@@ -5,7 +5,7 @@ use failure::{format_err, ResultExt};
 use xcb_util::keysyms::KeySymbols;
 use xcb_util::{ewmh, icccm};
 
-use crate::groups::Group;
+use crate::workspaces::WorkSpace;
 use crate::keys::{KeyCombo, KeyHandlers};
 use crate::stack::Stack;
 use crate::Result;
@@ -197,16 +197,16 @@ impl Connection {
         &self.root
     }
 
-    pub fn update_ewmh_desktops(&self, groups: &Stack<Group>) {
-        let group_names = groups.iter().map(|g| g.name());
+    pub fn update_ewmh_desktops(&self, workspace: &Stack<WorkSpace>) {
+        let group_names = workspace.iter().map(|g| g.name());
         ewmh::set_desktop_names(&self.conn, self.screen_idx, group_names);
-        ewmh::set_number_of_desktops(&self.conn, self.screen_idx, groups.len() as u32);
+        ewmh::set_number_of_desktops(&self.conn, self.screen_idx, workspace.len() as u32);
 
         // Matching the current group on name isn't perfect, but it's good enough for
         // EWMH.
-        let focused_idx = groups
+        let focused_idx = workspace
             .focused()
-            .and_then(|focused| groups.iter().position(|g| g.name() == focused.name()));
+            .and_then(|focused| workspace.iter().position(|g| g.name() == focused.name()));
         match focused_idx {
             Some(idx) => {
                 ewmh::set_current_desktop(&self.conn, self.screen_idx, idx as u32);

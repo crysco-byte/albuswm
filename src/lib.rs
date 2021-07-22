@@ -6,14 +6,14 @@ extern crate strum_macros;
 
 pub mod cmd;
 pub mod config;
-mod groups;
+mod workspaces;
 mod keys;
 pub mod layout;
 pub mod screen;
 mod stack;
 mod x;
 
-pub use crate::{groups::GroupBuilder, keys::ModKey, screen::Screen, stack::Stack};
+pub use crate::{workspaces::WorkSpaceBuilder, keys::ModKey, screen::Screen, stack::Stack};
 use {
     crate::x::{Connection, StrutPartial, WindowId},
     failure::{Error, ResultExt},
@@ -21,7 +21,7 @@ use {
 
 use {
     crate::{
-        groups::Group,
+        workspaces::WorkSpace,
         keys::{KeyCombo, KeyHandlers},
         layout::Layout,
         x::{Event, WindowType},
@@ -61,20 +61,20 @@ pub fn intiailize_logger() -> Result<()> {
     Ok(())
 }
 
-pub fn gen_groups(
+pub fn gen_workspaces(
     keys: Vec<config::parser::BoundCommand>,
-    groupdef: Vec<config::parser::BoundGroup>,
-) -> (Vec<config::parser::BoundCommand>, Vec<GroupBuilder>) {
+    groupdef: Vec<config::parser::BoundWorkSpace>,
+) -> (Vec<config::parser::BoundCommand>, Vec<WorkSpaceBuilder>) {
     let mut additional_keys: Vec<config::parser::BoundCommand> = Vec::new();
-    let mut groups: Vec<GroupBuilder> = Vec::new();
+    let mut workspaces: Vec<WorkSpaceBuilder> = Vec::new();
     for item in groupdef {
         let (mask, key, group_name, layout_name) = (item.0, item.1, item.2.clone(), item.3);
         additional_keys.push(gen_move_window_to_group_keys!(mask, key, group_name));
         additional_keys.push(gen_switch_group_keys!(mask, key, group_name));
-        groups.push(GroupBuilder::new(item.2, layout_name))
+        workspaces.push(WorkSpaceBuilder::new(item.2, layout_name))
     }
     additional_keys.extend(keys);
-    (additional_keys, groups)
+    (additional_keys, workspaces)
 }
 #[macro_export]
 macro_rules! gen_move_window_to_group_keys {
@@ -124,12 +124,12 @@ struct Dock {
 pub struct Volan {
     connection: Rc<Connection>,
     keys: KeyHandlers,
-    groups: Stack<Group>,
+    workspaces: Stack<WorkSpace>,
     screen: Screen,
 }
 
 impl Volan {
-    pub fn new<K>(keys: K, groups: Vec<GroupBuilder>, layouts: &[Box<dyn Layout>]) -> Result<Self>
+    pub fn new<K>(keys: K, workspaces: Vec<WorkSpaceBuilder>, layouts: &[Box<dyn Layout>]) -> Result<Self>
     where
         K: Into<KeyHandlers>,
     {
@@ -137,16 +137,16 @@ impl Volan {
         let connection: Rc<Connection> = Rc::new(Connection::connect()?);
         connection.install_as_wm(&keys)?;
 
-        let groups: Stack<Group> = Stack::from(
-            groups
+        let workspaces: Stack<WorkSpace> = Stack::from(
+            workspaces
                 .into_iter()
-                .map(|group: GroupBuilder| group.build(connection.clone(), layouts.to_owned()))
-                .collect::<Vec<Group>>(),
+                .map(|group: WorkSpaceBuilder| group.build(connection.clone(), layouts.to_owned()))
+                .collect::<Vec<WorkSpace>>(),
         );
 
         let mut wm: Volan = Volan {
             keys,
-            groups,
+            workspaces,
             connection: connection.clone(),
             screen: Screen::default(),
         };
@@ -158,7 +158,7 @@ impl Volan {
         }
         let viewport: Viewport = wm.viewport();
         wm.group_mut().activate(viewport);
-        wm.connection.update_ewmh_desktops(&wm.groups);
+        wm.connection.update_ewmh_desktops(&wm.workspaces);
 
         Ok(wm)
     }
@@ -169,12 +169,12 @@ impl Volan {
             .get_window_geometry(self.connection.root_window_id());
         self.screen.viewport(width, height)
     }
-    pub fn group(&self) -> &Group {
-        self.groups.focused().expect("Invariant: No active group!")
+    pub fn group(&self) -> &WorkSpace {
+        self.workspaces.focused().expect("Invariant: No active group!")
     }
 
-    pub fn group_mut(&mut self) -> &mut Group {
-        self.groups
+    pub fn group_mut(&mut self) -> &mut WorkSpace {
+        self.workspaces
             .focused_mut()
             .expect("Invariant: No active group!")
     }
@@ -186,10 +186,10 @@ impl Volan {
         }
 
         self.group_mut().deactivate();
-        self.groups.focus(|group| group.name() == name);
+        self.workspaces.focus(|group| group.name() == name);
         let viewport: Viewport = self.viewport();
         self.group_mut().activate(viewport);
-        self.connection.update_ewmh_desktops(&self.groups);
+        self.connection.update_ewmh_desktops(&self.workspaces);
     }
 
     /// Move the focused window from the active group to another named group.
@@ -203,8 +203,8 @@ impl Volan {
             return;
         }
         if let Some(removed) = self.group_mut().remove_focused() {
-            let new_group: Option<&mut Group> =
-                self.groups.iter_mut().find(|group| group.name() == name);
+            let new_group: Option<&mut WorkSpace> =
+                self.workspaces.iter_mut().find(|group| group.name() == name);
             match new_group {
                 Some(new_group) => {
                     new_group.add_window(removed);
@@ -221,14 +221,14 @@ impl Volan {
 
     /// Returns whether the window is a member of any group.
     fn is_window_managed(&self, window_id: &WindowId) -> bool {
-        self.groups.iter().any(|g| g.contains(window_id))
+        self.workspaces.iter().any(|g| g.contains(window_id))
     }
 
     pub fn manage_window(&mut self, window_id: WindowId) {
         debug!("Managing window: {}", window_id);
 
         // If we are already managing the window, then do nothing. We do not
-        // want the window to end up in two groups at once. We shouldn't
+        // want the window to end up in two workspaces at once. We shouldn't
         // be called in such cases, so treat it as an error.
         if self.is_window_managed(&window_id) {
             error!(
@@ -258,9 +258,9 @@ impl Volan {
     pub fn unmanage_window(&mut self, window_id: &WindowId) {
         debug!("Unmanaging window: {}", window_id);
 
-        // Remove the window from whichever Group it is in. Special case for
+        // Remove the window from whichever WorkSpace it is in. Special case for
         // docks which aren't in any group.
-        self.groups
+        self.workspaces
             .iter_mut()
             .find(|group| group.contains(window_id))
             .map(|group| group.remove_window(window_id));
