@@ -6,14 +6,14 @@ extern crate strum_macros;
 
 pub mod cmd;
 pub mod config;
-mod workspaces;
 mod keys;
 pub mod layout;
 pub mod screen;
 mod stack;
+mod workspaces;
 mod x;
 
-pub use crate::{workspaces::WorkSpaceBuilder, keys::ModKey, screen::Screen, stack::Stack};
+pub use crate::{keys::ModKey, screen::Screen, stack::Stack, workspaces::WorkSpaceBuilder};
 use {
     crate::x::{Connection, StrutPartial, WindowId},
     failure::{Error, ResultExt},
@@ -21,9 +21,9 @@ use {
 
 use {
     crate::{
-        workspaces::WorkSpace,
         keys::{KeyCombo, KeyHandlers},
         layout::Layout,
+        workspaces::WorkSpace,
         x::{Event, WindowType},
     },
     std::rc::Rc,
@@ -62,10 +62,10 @@ pub fn intiailize_logger() -> Result<()> {
 }
 
 pub fn gen_workspaces(
-    keys: Vec<config::parser::BoundCommand>,
-    groupdef: Vec<config::parser::BoundWorkSpace>,
-) -> (Vec<config::parser::BoundCommand>, Vec<WorkSpaceBuilder>) {
-    let mut additional_keys: Vec<config::parser::BoundCommand> = Vec::new();
+    keys: Vec<config::BoundCommand>,
+    groupdef: Vec<config::BoundWorkSpace>,
+) -> (Vec<config::BoundCommand>, Vec<WorkSpaceBuilder>) {
+    let mut additional_keys: Vec<config::BoundCommand> = Vec::new();
     let mut workspaces: Vec<WorkSpaceBuilder> = Vec::new();
     for item in groupdef {
         let (mask, key, group_name, layout_name) = (item.0, item.1, item.2.clone(), item.3);
@@ -129,7 +129,11 @@ pub struct Volan {
 }
 
 impl Volan {
-    pub fn new<K>(keys: K, workspaces: Vec<WorkSpaceBuilder>, layouts: &[Box<dyn Layout>]) -> Result<Self>
+    pub fn new<K>(
+        keys: K,
+        workspaces: Vec<WorkSpaceBuilder>,
+        layouts: &[Box<dyn Layout>],
+    ) -> Result<Self>
     where
         K: Into<KeyHandlers>,
     {
@@ -170,7 +174,9 @@ impl Volan {
         self.screen.viewport(width, height)
     }
     pub fn group(&self) -> &WorkSpace {
-        self.workspaces.focused().expect("Invariant: No active group!")
+        self.workspaces
+            .focused()
+            .expect("Invariant: No active group!")
     }
 
     pub fn group_mut(&mut self) -> &mut WorkSpace {
@@ -203,8 +209,10 @@ impl Volan {
             return;
         }
         if let Some(removed) = self.group_mut().remove_focused() {
-            let new_group: Option<&mut WorkSpace> =
-                self.workspaces.iter_mut().find(|group| group.name() == name);
+            let new_group: Option<&mut WorkSpace> = self
+                .workspaces
+                .iter_mut()
+                .find(|group| group.name() == name);
             match new_group {
                 Some(new_group) => {
                     new_group.add_window(removed);
