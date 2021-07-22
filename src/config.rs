@@ -5,19 +5,18 @@ pub mod parser {
     use crate::cmd::Command;
     use crate::ModKey;
     use std::collections::HashMap;
+    use std::str::FromStr;
     type LayoutName = String;
-    type GroupName = String;
+    type WorkSpaceName = String;
     pub type XKeyValue = u32;
     pub type BoundCommand = (Vec<ModKey>, XKeyValue, Command);
-    pub type BoundGroup = (ModKey, XKeyValue, GroupName, LayoutName);
+    pub type BoundWorkSpace = (ModKey, XKeyValue, WorkSpaceName, LayoutName);
     type Innergaps = u32;
     type Outergaps = u32;
 
     pub fn get_gaps() -> (Innergaps, Outergaps) {
         null_check_config();
-        let config: String = config_file_handler::read_config_file();
-        let deserialized_config: config_deserializer::Config =
-            config_deserializer::deserialize_config(config);
+        let deserialized_config: config_deserializer::Config = get_deserialized_config();
         (
             deserialized_config.gaps.inner,
             deserialized_config.gaps.outer,
@@ -26,39 +25,38 @@ pub mod parser {
 
     pub fn get_bound_commands() -> Vec<BoundCommand> {
         null_check_config();
-        let config: String = config_file_handler::read_config_file();
-        let deserialized_config: config_deserializer::Config =
-            config_deserializer::deserialize_config(config);
+        let deserialized_config: config_deserializer::Config = get_deserialized_config();
         get_parsed_bindings(deserialized_config)
     }
 
-    pub fn get_bound_groups() -> Vec<BoundGroup> {
+    pub fn get_bound_workspaces() -> Vec<BoundWorkSpace> {
         null_check_config();
-        let config: String = config_file_handler::read_config_file();
-        let deserialized_config: config_deserializer::GroupDefinition =
-            config_deserializer::deserialize_config(config).group_definitions;
-        let mut result: Vec<BoundGroup> = Vec::new();
-        for data_group in deserialized_config.groups {
-            if let Ok(parsed) = parse_group_defintions_from_config(data_group.clone()) {
+        let mut result: Vec<BoundWorkSpace> = Vec::new();
+        let work_space_defs: Vec<HashMap<String, String>> = get_deserialized_config().work_spaces;
+        for work_space in work_space_defs {
+            if let Ok(parsed) = parse_work_space(work_space.clone()) {
                 result.push(parsed);
             } else {
-                error!("Could not parse this group definition: {:?}", data_group);
+                error!("Could not parse workspace: {:?} continuing ...", work_space);
                 continue;
             }
         }
         result
     }
 
-    fn parse_group_defintions_from_config(
-        data_group: HashMap<String, String>,
-    ) -> Result<BoundGroup, ()> {
-        let mask: ModKey = key_parse::parse_mask_keys(vec![data_group["mask"].clone()])[0];
-        let xk_key: u32 = safe_xk_parse(&data_group["key"])?;
+    fn get_deserialized_config() -> config_deserializer::Config {
+        let config: String = config_file_handler::read_config_file();
+        config_deserializer::deserialize_config(config)
+    }
+
+    fn parse_work_space(work_space: HashMap<String, String>) -> Result<BoundWorkSpace, ()> {
+        let mask: ModKey = key_parse::parse_mask_keys(work_space["masks"].clone())[0];
+        let xk_key: u32 = safe_xk_parse(&work_space["key"])?;
         Ok((
             mask,
             xk_key,
-            data_group["name"].clone(),
-            data_group["layout"].clone(),
+            work_space["name"].clone(),
+            work_space["layout"].clone(),
         ))
     }
 
@@ -68,32 +66,30 @@ pub mod parser {
         }
     }
 
-    fn get_parsed_bindings(parsed_config: config_deserializer::Config) -> Vec<BoundCommand> {
+    fn get_parsed_bindings(deserialized_config: config_deserializer::Config) -> Vec<BoundCommand> {
         let mut key_bindings: Vec<BoundCommand> =
-            parse_keybindings_from_config(parsed_config.key_bindings);
+            parse_keybindings_from_config(deserialized_config.key_bindings);
         let spawn_bindings: Vec<BoundCommand> =
-            parse_spawn_bindings_from_config(parsed_config.spawn_bindings);
+            parse_spawn_bindings_from_config(deserialized_config.spawn_bindings);
         key_bindings.extend(spawn_bindings);
         key_bindings
     }
 
     fn parse_keybindings_from_config(
-        key_bindings: config_deserializer::KeyBindingDefinition,
+        key_bindings: Vec<HashMap<String, String>>,
     ) -> Vec<BoundCommand> {
         let mut result: Vec<BoundCommand> = Vec::new();
-        let kb_to_vec: Vec<HashMap<String, Vec<String>>> =
-            convert_keybindings_into_vector(key_bindings);
-        for (i, data_group) in kb_to_vec.into_iter().enumerate() {
+        for key_binding in key_bindings {
             if let Ok(parsed_mask_and_key) = key_parse::parse_mask_and_key(
-                data_group["mask"].clone(),
-                data_group["key"][0].clone(),
+                key_binding["mask"].clone(),
+                key_binding["key"].clone(),
             ) {
                 let lazy_command: Command = lazy_commands::get_cmd_based_on_action(
-                    &lazy_commands::lookup_actiontypes_by_index(i),
+                    &lazy_commands::ActionTypes::from_str(&key_binding["function"]).unwrap(),
                 );
                 result.push((parsed_mask_and_key.0, parsed_mask_and_key.1, lazy_command));
             } else {
-                error!("Could not parse: {:?}", data_group);
+                error!("Could not parse {:?} continuing ...", key_binding);
                 continue;
             }
         }
@@ -101,38 +97,33 @@ pub mod parser {
     }
 
     fn parse_spawn_bindings_from_config(
-        spawn_bindings: config_deserializer::SpawnBindingDefinition,
+        spawn_bindings: Vec<HashMap<String, String>>,
     ) -> Vec<BoundCommand> {
         let mut result: Vec<BoundCommand> = Vec::new();
-        for data_group in spawn_bindings.spawns {
-            if let Ok(parsed_mask_and_key) = key_parse::parse_mask_and_key(
-                data_group["mask"].clone(),
-                data_group["key"][0].clone(),
-            ) {
-                let lazy_command: Command = lazy_commands::lazy_spawn(
-                    data_group["command"].clone(),
-                    data_group["args"].clone(),
-                );
+        for spawn_kb in spawn_bindings {
+            if let Ok(parsed_mask_and_key) =
+                key_parse::parse_mask_and_key(spawn_kb["masks"].clone(), spawn_kb["key"].clone())
+            {
+                let lazy_command: Command =
+                    get_lazy_spawn_command(spawn_kb["command"].clone(), spawn_kb["args"].clone());
                 result.push((parsed_mask_and_key.0, parsed_mask_and_key.1, lazy_command));
             } else {
-                error!("Could not parse {:?}", data_group);
+                error!("Could not parse {:?} continuing", spawn_kb);
                 continue;
             }
         }
         result
     }
 
-    fn convert_keybindings_into_vector(
-        kb: config_deserializer::KeyBindingDefinition,
-    ) -> Vec<HashMap<String, Vec<String>>> {
-        vec![
-            kb.close_focused,
-            kb.focus_next,
-            kb.focus_prev,
-            kb.decrease_master,
-            kb.increase_master,
-            kb.layout_next,
-        ]
+    fn get_lazy_spawn_command(command: String, pipe_separated_args: String) -> Command {
+        lazy_commands::lazy_spawn(command, split_args(pipe_separated_args))
+    }
+
+    fn split_args(pipe_separated_args: String) -> Vec<String> {
+        pipe_separated_args
+            .split("|")
+            .map(|i| i.to_string())
+            .collect()
     }
 }
 
@@ -142,50 +133,50 @@ mod key_parse {
     use std::str::FromStr;
 
     pub fn parse_mask_and_key(
-        mask: Vec<String>,
+        mask: String,
         xk_key: String,
     ) -> Result<(Vec<ModKey>, parser::XKeyValue), ()> {
         Ok((parse_mask_keys(mask), safe_xk_parse(&xk_key)?))
     }
 
-    pub fn parse_mask_keys(masks: Vec<String>) -> Vec<ModKey> {
+    pub fn parse_mask_keys(mask: String) -> Vec<ModKey> {
         let mut result: Vec<ModKey> = Vec::new();
-        for key in masks {
-            result.push(ModKey::from_str(&key).expect("Could not parse mask keys"));
+        for key in split_mask_keys(mask) {
+            result.push(str_to_mask_key(key));
         }
         result
+    }
+
+    fn split_mask_keys(pipe_separated_masks: String) -> Vec<String> {
+        pipe_separated_masks
+            .split("|")
+            .map(|i| i.to_string())
+            .collect()
+    }
+
+    fn str_to_mask_key(str_mask: String) -> ModKey {
+        if let Ok(parsed_key) = ModKey::from_str(&str_mask) {
+            parsed_key
+        } else {
+            error!(
+                "Mask key {}, is not a valid key defaulting to Mod1",
+                str_mask
+            );
+            ModKey::Mod1
+        }
     }
 }
 
 mod config_deserializer {
     use serde::Deserialize;
     use std::collections::HashMap;
+
     #[derive(Deserialize, Debug)]
     pub struct Config {
-        pub key_bindings: KeyBindingDefinition,
-        pub spawn_bindings: SpawnBindingDefinition,
-        pub group_definitions: GroupDefinition,
+        pub key_bindings: Vec<HashMap<String, String>>,
+        pub spawn_bindings: Vec<HashMap<String, String>>,
+        pub work_spaces: Vec<HashMap<String, String>>,
         pub gaps: Gaps,
-    }
-
-    #[derive(Deserialize, Debug)]
-    pub struct GroupDefinition {
-        pub groups: Vec<HashMap<String, String>>,
-    }
-
-    #[derive(Deserialize, Debug)]
-    pub struct KeyBindingDefinition {
-        pub close_focused: HashMap<String, Vec<String>>,
-        pub focus_next: HashMap<String, Vec<String>>,
-        pub focus_prev: HashMap<String, Vec<String>>,
-        pub decrease_master: HashMap<String, Vec<String>>,
-        pub increase_master: HashMap<String, Vec<String>>,
-        pub layout_next: HashMap<String, Vec<String>>,
-    }
-
-    #[derive(Deserialize, Debug)]
-    pub struct SpawnBindingDefinition {
-        pub spawns: Vec<HashMap<String, Vec<String>>>,
     }
 
     #[derive(Deserialize, Debug)]
@@ -195,31 +186,21 @@ mod config_deserializer {
     }
 
     pub fn deserialize_config(config_file: String) -> Config {
-        toml::from_str(&config_file).expect("Could not parse config file")
+        serde_yaml::from_str(&config_file).expect("Could not parse config file")
     }
 }
 
 mod lazy_commands {
     use crate::cmd::{self, Command};
+
+    #[derive(EnumString)]
     pub enum ActionTypes {
         CloseFocused,
         FocusNext,
         FocusPrev,
-        ResizeLeft,
-        ResizeRight,
+        DecreaseMaster,
+        IncreaseMaster,
         LayoutNext,
-    }
-
-    pub fn lookup_actiontypes_by_index(i: usize) -> ActionTypes {
-        match i {
-            0 => ActionTypes::CloseFocused,
-            1 => ActionTypes::FocusNext,
-            2 => ActionTypes::FocusPrev,
-            3 => ActionTypes::ResizeLeft,
-            4 => ActionTypes::ResizeRight,
-            5 => ActionTypes::LayoutNext,
-            _ => panic!("Index out of bounds"),
-        }
     }
 
     pub fn get_cmd_based_on_action(action: &ActionTypes) -> Command {
@@ -227,14 +208,14 @@ mod lazy_commands {
             ActionTypes::CloseFocused => cmd::lazy::close_focused_window(),
             ActionTypes::FocusNext => cmd::lazy::focus_next(),
             ActionTypes::FocusPrev => cmd::lazy::focus_previous(),
-            ActionTypes::ResizeRight => cmd::lazy::increase_master(),
-            ActionTypes::ResizeLeft => cmd::lazy::decrease_master(),
+            ActionTypes::IncreaseMaster => cmd::lazy::increase_master(),
+            ActionTypes::DecreaseMaster => cmd::lazy::decrease_master(),
             ActionTypes::LayoutNext => cmd::lazy::layout_next(),
         }
     }
 
-    pub fn lazy_spawn(command: Vec<String>, args: Vec<String>) -> Command {
-        cmd::lazy::spawn(command[0].clone(), args)
+    pub fn lazy_spawn(command: String, args: Vec<String>) -> Command {
+        cmd::lazy::spawn(command, args)
     }
 }
 
@@ -246,7 +227,7 @@ mod config_file_handler {
     pub fn create_default_config_file() {
         let xdg_dirs: BaseDirectories = BaseDirectories::with_prefix("volan").unwrap();
         let config_path: std::path::PathBuf = xdg_dirs
-            .place_config_file("config.toml")
+            .place_config_file("config.yaml")
             .expect("Could not create config file");
         let mut config_file = fs::File::create(config_path).expect("Failed to write config file");
         config_file
@@ -257,7 +238,7 @@ mod config_file_handler {
     pub fn read_config_file() -> String {
         let xdg_dirs: BaseDirectories = BaseDirectories::with_prefix("volan").unwrap();
         let config_file_path: std::path::PathBuf =
-            xdg_dirs.find_config_file("config.toml").unwrap();
+            xdg_dirs.find_config_file("config.yaml").unwrap();
         let mut file: fs::File =
             fs::File::open(config_file_path).expect("Could not open config file");
         let mut contents: String = String::new();
@@ -267,39 +248,39 @@ mod config_file_handler {
 
     pub fn config_file_exists() -> bool {
         let xdg_dirs: BaseDirectories = BaseDirectories::with_prefix("volan").unwrap();
-        xdg_dirs.find_config_file("config.toml").is_some()
+        xdg_dirs.find_config_file("config.yaml").is_some()
     }
 
-    static DEFAULT_CONFIG: &str = r#"
-[key_bindings]
-close_focused = {mask=["Mod1"], key=["XK_w"]}
-focus_next = {mask=["Mod1"], key=["XK_j"]}
-focus_prev = {mask=["Mod1"], key=["XK_k"]}
-decrease_master = {mask=["Mod1"], key=["XK_h"]}
-increase_master = {mask=["Mod1"], key=["XK_l"]}
-layout_next = {mask=["Mod1"], key=["XK_Tab"]}
+    static DEFAULT_CONFIG: &str = "
+# Masks and command arguments can be separated by pipe symbols (|)
+# Example:
+# {command: mkdir, args: -p|dir1|dir2|dir3, key:XK_n, masks: Mod1|Shift}
 
-[spawn_bindings]
-spawns = [
-    {command=["pkill"], args=["Xorg"], mask=["Mod1"], key=["XK_q"]},
-    {command=["qutebrowser"], args=[""], mask=["Mod1"], key=["XK_o"]},
-    {command=["alacritty"], args=[""], mask=["Mod1"], key=["XK_Return"]},
-    {command=["emacs"], args=[""], mask=["Mod1"], key=["XK_space"]},
-    {command=["dmenu_run"], args=[""], mask=["Mod1"], key=["XK_p"]}
-]
+key_bindings:
+  - {function: CloseFocused,      masks: Mod1,    key: XK_w  }
+  - {function: FocusNext,         masks: Mod1,    key: XK_j  }
+  - {function: FocusPrev,         masks: Mod1,    key: XK_k  }
+  - {function: DecreaseMaster,    masks: Mod1,    key: XK_h  }
+  - {function: IncreaseMaster,    masks: Mod1,    key: XK_l  }
+  - {function: LayoutNext,        masks: Mod1,    key: XK_Tab}
 
-[group_definitions]
-groups = [
-    {mask = "Mod1", key="XK_a", name="alpha", layout="c_master"},
-    {mask = "Mod1", key="XK_s", name="beta", layout="c_master"},
-    {mask = "Mod1", key="XK_d", name="gamma", layout="tile"},
-    {mask = "Mod1", key="XK_f", name="delta", layout="tile"},
-]
+spawn_bindings:
+  - {command: pkill,          args: Xorg|volanwm,     key: XK_q,      masks: Mod1}
+  - {command: qutebrowser,    args:,                  key: XK_o,      masks: Mod1}
+  - {command: alacritty,      args:,                  key: XK_Return, masks: Mod1}
+  - {command: emacs,          args:,                  key: XK_space,  masks: Mod1}
+  - {command: dmenu_run,      args:,                  key: XK_p,      masks: Mod1}
 
-[gaps]
-inner = 5
-outer = 20
-    "#;
+work_spaces:
+    - {name: alpha,     layout: c_master,   key: XK_a,      masks: Mod1}
+    - {name: beta,      layout: c_master,   key: XK_s,      masks: Mod1}
+    - {name: gamma,     layout: tile,       key: XK_d,      masks: Mod1}
+    - {name: delta,     layout: tile,       key: XK_f,      masks: Mod1}
+
+gaps:
+  inner: 5
+  outer: 20
+    ";
 }
 
 pub fn safe_xk_parse(string: &str) -> Result<u32, ()> {
