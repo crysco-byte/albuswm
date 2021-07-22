@@ -19,6 +19,7 @@ pub struct Parser {
 
 impl Parser {
     pub fn new() -> Self {
+        config_file_handler::null_check_config();
         Self {
             deserialized_config: Self::get_deserialized_config(),
         }
@@ -26,7 +27,6 @@ impl Parser {
 
     pub fn get_gaps(&self) -> (Innergaps, Outergaps) {
         info!("Getting gaps");
-        config_file_handler::null_check_config();
         (
             self.deserialized_config.gaps.inner,
             self.deserialized_config.gaps.outer,
@@ -35,13 +35,11 @@ impl Parser {
 
     pub fn get_bound_commands(&self) -> Vec<BoundCommand> {
         info!("Getting bound commands");
-        config_file_handler::null_check_config();
         Self::get_parsed_bindings(self.deserialized_config.clone())
     }
 
     pub fn get_bound_workspaces(&self) -> Vec<BoundWorkSpace> {
         info!("Getting bound workspaces");
-        config_file_handler::null_check_config();
         let mut result: Vec<BoundWorkSpace> = Vec::new();
         let work_space_defs: Vec<HashMap<String, String>> =
             self.deserialized_config.work_spaces.clone();
