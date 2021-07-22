@@ -132,7 +132,7 @@ impl Parser {
     fn split_args(pipe_separated_args: String) -> Vec<String> {
         pipe_separated_args
             .split("|")
-            .map(|i| i.to_string())
+            .map(|i| {if i=="~" {" ".to_string()}else{i.to_string()}})
             .collect()
     }
 }
