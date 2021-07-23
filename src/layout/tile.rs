@@ -49,31 +49,31 @@ impl Layout for TileLayout {
         }
     }
 
-    fn increase_innergaps(&mut self, increase_ammount: u32) {
-        self.innergaps += increase_ammount;
+    fn increase_innergaps(&mut self) {
+        self.innergaps += 1;
         info!("Increased innergaps to {}", self.innergaps);
     }
 
-    fn decrease_innergaps(&mut self, decrease_ammount: u32) {
-        if (self.innergaps as i32 - decrease_ammount as i32) >= 0 {
-            self.innergaps -= decrease_ammount;
+    fn decrease_innergaps(&mut self) {
+        if (self.innergaps as i32 - 1) >= 0 {
+            self.innergaps -= 1;
             info!("Decreased innergaps to {}", self.innergaps);
         } else {
             error!("Further decreasing inner gaps is less than zero");
         }
     }
 
-    fn decrease_outergaps(&mut self, decrease_ammount: u32) {
-        if (self.innergaps as i32 - decrease_ammount as i32) >= 0 {
-            self.innergaps -= decrease_ammount;
+    fn decrease_outergaps(&mut self) {
+        if (self.innergaps as i32 - 1) >= 0 {
+            self.innergaps -= 1;
             info!("Decreased outergaps to {}", self.innergaps);
         } else {
             error!("Further decreasing outer gaps is less than zero");
         }
     }
 
-    fn increase_outergaps(&mut self, increase_ammount: u32) {
-        self.outergaps += increase_ammount;
+    fn increase_outergaps(&mut self) {
+        self.outergaps += 1;
         info!("Increased outergaps to {}", self.outergaps);
     }
 }
