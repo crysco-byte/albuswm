@@ -26,7 +26,7 @@ impl Parser {
     }
 
     pub fn get_gaps(&self) -> (Innergaps, Outergaps) {
-        info!("Getting gaps");
+        info!("Getting gap values");
         (
             self.deserialized_config.gaps.inner,
             self.deserialized_config.gaps.outer,
