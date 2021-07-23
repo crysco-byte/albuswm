@@ -55,12 +55,12 @@ impl Layout for TileLayout {
     }
 
     fn decrease_innergaps(&mut self, decrease_ammount: u32) {
-        self.innergaps += decrease_ammount;
+        self.innergaps -= decrease_ammount;
         info!("Decreased innergaps to {}", self.innergaps);
     }
 
     fn decrease_outergaps(&mut self, decrease_ammount: u32) {
-        self.innergaps += decrease_ammount;
+        self.innergaps -= decrease_ammount;
         info!("Decreased innergaps to {}", self.innergaps);
     }
 
