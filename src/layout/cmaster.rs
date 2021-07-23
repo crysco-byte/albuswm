@@ -66,16 +66,20 @@ impl Layout for CenterMaster {
     }
 
     fn decrease_innergaps(&mut self, decrease_ammount: u32) {
-        if !self.innergaps != 0 {
+        if (self.innergaps as i32 - decrease_ammount as i32) > 0{
             self.innergaps -= decrease_ammount;
             info!("Decreased innergaps to {}", self.innergaps);
+        }else{
+            error!("Further decreasing is less than zero");
         }
     }
 
     fn decrease_outergaps(&mut self, decrease_ammount: u32) {
-        if !self.outergaps != 0 {
-            self.outergaps -= decrease_ammount;
-            info!("Decreased outergaps to {}", self.outergaps);
+        if (self.innergaps as i32 - decrease_ammount as i32) > 0{
+            self.innergaps -= decrease_ammount;
+            info!("Decreased outergaps to {}", self.innergaps);
+        }else{
+            error!("Further decreasing is less than zero");
         }
     }
 
