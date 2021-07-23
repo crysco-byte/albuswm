@@ -42,27 +42,27 @@ static DEFAULT_CONFIG: &str = "
 # {command: mkdir, args: -p|dir1|dir2|dir3, key:XK_n, masks: Mod1|Shift}
 
 key_bindings:
-- {function: CloseFocused,      masks: Mod1,    key: XK_w  }
-- {function: FocusNext,         masks: Mod1,    key: XK_j  }
-- {function: FocusPrev,         masks: Mod1,    key: XK_k  }
-- {function: DecreaseMaster,    masks: Mod1,    key: XK_h  }
-- {function: IncreaseMaster,    masks: Mod1,    key: XK_l  }
-- {function: LayoutNext,        masks: Mod1,    key: XK_Tab}
+  - {function: CloseFocused,      masks: Mod1,    key: XK_w  }
+  - {function: FocusNext,         masks: Mod1,    key: XK_j  }
+  - {function: FocusPrev,         masks: Mod1,    key: XK_k  }
+  - {function: DecreaseMaster,    masks: Mod1,    key: XK_h  }
+  - {function: IncreaseMaster,    masks: Mod1,    key: XK_l  }
+  - {function: LayoutNext,        masks: Mod1,    key: XK_Tab}
 
 spawn_bindings:
-- {command: pkill,          args: Xorg|volanwm,     key: XK_q,      masks: Mod1}
-- {command: qutebrowser,    args:,                  key: XK_o,      masks: Mod1}
-- {command: alacritty,      args:,                  key: XK_Return, masks: Mod1}
-- {command: emacs,          args:,                  key: XK_space,  masks: Mod1}
-- {command: dmenu_run,      args:,                  key: XK_p,      masks: Mod1}
+  - {command: pkill,          args: Xorg|volanwm,     key: XK_q,      masks: Mod1}
+  - {command: qutebrowser,    args:,                  key: XK_o,      masks: Mod1}
+  - {command: alacritty,      args:,                  key: XK_Return, masks: Mod1}
+  - {command: emacs,          args:,                  key: XK_space,  masks: Mod1}
+  - {command: dmenu_run,      args:,                  key: XK_p,      masks: Mod1}
 
 work_spaces:
-- {name: alpha,     layout: c_master,   key: XK_a,      masks: Mod1}
-- {name: beta,      layout: c_master,   key: XK_s,      masks: Mod1}
-- {name: gamma,     layout: tile,       key: XK_d,      masks: Mod1}
-- {name: delta,     layout: tile,       key: XK_f,      masks: Mod1}
+  - {name: alpha,     layout: c_master,   key: XK_a,      masks: Mod1}
+  - {name: beta,      layout: c_master,   key: XK_s,      masks: Mod1}
+  - {name: gamma,     layout: tile,       key: XK_d,      masks: Mod1}
+  - {name: delta,     layout: tile,       key: XK_f,      masks: Mod1}
 
 gaps:
-inner: 5
-outer: 20
+  inner: 5
+  outer: 20
 ";
