@@ -48,6 +48,26 @@ impl Layout for TileLayout {
             self.resized_width += resize_amount;
         }
     }
+
+    fn increase_innergaps(&mut self, increase_ammount: u32) {
+        self.innergaps += increase_ammount;
+        info!("Increased innergaps to {}", self.innergaps);
+    }
+
+    fn decrease_innergaps(&mut self, decrease_ammount: u32) {
+        self.innergaps += decrease_ammount;
+        info!("Decreased innergaps to {}", self.innergaps);
+    }
+
+    fn decrease_outergaps(&mut self, decrease_ammount: u32) {
+        self.innergaps += decrease_ammount;
+        info!("Decreased innergaps to {}", self.innergaps);
+    }
+
+    fn increase_outergaps(&mut self, increase_ammount: u32) {
+        self.outergaps += increase_ammount;
+        info!("Increased outergaps to {}", self.outergaps);
+    }
 }
 
 impl TileLayout {
@@ -106,7 +126,9 @@ impl TileLayout {
         viewport: &Viewport,
     ) -> WindowGeometry {
         let x: u32 = ((viewport.width / 2) as i16 + self.resized_width) as u32 + self.innergaps;
-        let width: u32 = ((viewport.width / 2) as i16 - self.resized_width) as u32 - self.outergaps - self.innergaps;
+        let width: u32 = ((viewport.width / 2) as i16 - self.resized_width) as u32
+            - self.outergaps
+            - self.innergaps;
         let height: u32 = (viewport.height - self.outergaps * 2 + self.innergaps)
             / (stack.len() - 1) as u32
             - self.innergaps;

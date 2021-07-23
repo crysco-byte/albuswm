@@ -42,12 +42,16 @@ static DEFAULT_CONFIG: &str = "
 # {command: mkdir, args: -p|dir1|dir2|dir3, key:XK_n, masks: Mod1|Shift}
 
 key_bindings:
-  - {function: CloseFocused,      masks: Mod1,    key: XK_w  }
-  - {function: FocusNext,         masks: Mod1,    key: XK_j  }
-  - {function: FocusPrev,         masks: Mod1,    key: XK_k  }
-  - {function: DecreaseMaster,    masks: Mod1,    key: XK_h  }
-  - {function: IncreaseMaster,    masks: Mod1,    key: XK_l  }
-  - {function: LayoutNext,        masks: Mod1,    key: XK_Tab}
+  - {function: CloseFocused,      masks: Mod1,          key: XK_w  }
+  - {function: FocusNext,         masks: Mod1,          key: XK_j  }
+  - {function: FocusPrev,         masks: Mod1,          key: XK_k  }
+  - {function: DecreaseMaster,    masks: Mod1,          key: XK_h  }
+  - {function: IncreaseMaster,    masks: Mod1,          key: XK_l  }
+  - {function: LayoutNext,        masks: Mod1,          key: XK_Tab}
+  - {function: IncreaseInnerGaps, masks: Mod1,          key: XK_1  }
+  - {function: DecreaseInnerGaps, masks: Mod1,          key: XK_2  }
+  - {function: IncreaseOuterGaps, masks: Mod1|Shift,    key: XK_1  }
+  - {function: DecreaseOuterGaps, masks: Mod1|Shift,    key: XK_2  }
 
 spawn_bindings:
   - {command: pkill,          args: Xorg|volanwm,     key: XK_q,      masks: Mod1}

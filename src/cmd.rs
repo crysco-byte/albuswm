@@ -1,5 +1,5 @@
-use crate::Volan;
 use crate::Result;
+use crate::Volan;
 use std::rc::Rc;
 
 pub type Command = Rc<dyn Fn(&mut Volan) -> Result<()>>;
@@ -26,6 +26,34 @@ pub mod lazy {
     pub fn focus_next() -> Command {
         Rc::new(|ref mut wm| {
             wm.group_mut().focus_next();
+            Ok(())
+        })
+    }
+
+    pub fn increase_innergaps() -> Command {
+        Rc::new(|ref mut wm| {
+            wm.group_mut().increase_innergaps();
+            Ok(())
+        })
+    }
+
+    pub fn decrease_innergaps() -> Command {
+        Rc::new(|ref mut wm| {
+            wm.group_mut().decrease_innergaps();
+            Ok(())
+        })
+    }
+
+    pub fn increase_outergaps() -> Command {
+        Rc::new(|ref mut wm| {
+            wm.group_mut().increase_outergaps();
+            Ok(())
+        })
+    }
+
+    pub fn decrease_outergaps() -> Command {
+        Rc::new(|ref mut wm| {
+            wm.group_mut().decrease_outergaps();
             Ok(())
         })
     }

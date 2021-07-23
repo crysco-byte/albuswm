@@ -34,6 +34,10 @@ pub trait Layout: LayoutClone {
     );
     fn decrease_master(&mut self, viewport: &Viewport, resize_amount: i16);
     fn increase_master(&mut self, viewport: &Viewport, resize_amount: i16);
+    fn increase_innergaps(&mut self, increase_ammount: u32);
+    fn decrease_innergaps(&mut self, decrease_ammount: u32);
+    fn decrease_outergaps(&mut self, decrease_ammount: u32);
+    fn increase_outergaps(&mut self, increase_ammount: u32);
 }
 
 impl Clone for Box<dyn Layout> {

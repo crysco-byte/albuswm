@@ -59,6 +59,26 @@ impl Layout for CenterMaster {
             self.tile_resized_width += resize_amount;
         }
     }
+
+    fn increase_innergaps(&mut self, increase_ammount: u32) {
+        self.innergaps += increase_ammount;
+        info!("Increased innergaps to {}", self.innergaps);
+    }
+
+    fn decrease_innergaps(&mut self, decrease_ammount: u32) {
+        self.innergaps += decrease_ammount;
+        info!("Decreased innergaps to {}", self.innergaps);
+    }
+
+    fn decrease_outergaps(&mut self, decrease_ammount: u32) {
+        self.innergaps += decrease_ammount;
+        info!("Decreased innergaps to {}", self.innergaps);
+    }
+
+    fn increase_outergaps(&mut self, increase_ammount: u32) {
+        self.outergaps += increase_ammount;
+        info!("Increased outergaps to {}", self.outergaps);
+    }
 }
 
 impl CenterMaster {
@@ -122,12 +142,7 @@ impl CenterMaster {
         if i % 2 == 0 {
             return self.calculate_left_stack_geometry(stack_length, viewport, master_width, i);
         } else {
-            return self.calculate_right_stack_geometry(
-                &stack_length,
-                viewport,
-                i,
-                master_width,
-            );
+            return self.calculate_right_stack_geometry(&stack_length, viewport, i, master_width);
         }
     }
 
@@ -240,7 +255,8 @@ mod right_stack {
         }
 
         fn calculate_right_stack_width(&self, viewport: &Viewport, master_width: u32) -> u32 {
-            (self.resized_width + ((viewport.width - master_width) / 2) as i16) as u32 - self.outergaps * 2
+            (self.resized_width + ((viewport.width - master_width) / 2) as i16) as u32
+                - self.outergaps * 2
         }
 
         fn calculate_right_stack_height(&self, viewport: &Viewport, right_stack_len: u32) -> u32 {

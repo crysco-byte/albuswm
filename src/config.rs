@@ -130,7 +130,13 @@ impl Parser {
     fn split_args(pipe_separated_args: String) -> Vec<String> {
         pipe_separated_args
             .split("|")
-            .map(|i| {if i=="~" {"".to_string()}else{i.to_string()}})
+            .map(|i| {
+                if i == "~" {
+                    "".to_string()
+                } else {
+                    i.to_string()
+                }
+            })
             .collect()
     }
 }
@@ -170,6 +176,10 @@ mod lazy_commands {
         DecreaseMaster,
         IncreaseMaster,
         LayoutNext,
+        IncreaseInnerGaps,
+        DecreaseInnerGaps,
+        IncreaseOuterGaps,
+        DecreaseOuterGaps,
     }
 
     pub fn get_cmd_based_on_action(action: &ActionTypes) -> Command {
@@ -180,6 +190,10 @@ mod lazy_commands {
             ActionTypes::IncreaseMaster => cmd::lazy::increase_master(),
             ActionTypes::DecreaseMaster => cmd::lazy::decrease_master(),
             ActionTypes::LayoutNext => cmd::lazy::layout_next(),
+            ActionTypes::IncreaseInnerGaps => cmd::lazy::increase_innergaps(),
+            ActionTypes::DecreaseInnerGaps => cmd::lazy::decrease_innergaps(),
+            ActionTypes::IncreaseOuterGaps => cmd::lazy::increase_outergaps(),
+            ActionTypes::DecreaseOuterGaps => cmd::lazy::decrease_outergaps(),
         }
     }
 

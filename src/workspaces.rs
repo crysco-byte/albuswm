@@ -61,6 +61,46 @@ impl WorkSpace {
         self.perform_layout();
     }
 
+    pub fn decrease_innergaps(&mut self) {
+        if !self.active {
+            return;
+        }
+        if let Some(layout) = self.layouts.focused_mut() {
+            layout.decrease_innergaps(10);
+        }
+        self.perform_layout();
+    }
+
+    pub fn increase_innergaps(&mut self) {
+        if !self.active {
+            return;
+        }
+        if let Some(layout) = self.layouts.focused_mut() {
+            layout.increase_innergaps(10);
+        }
+        self.perform_layout();
+    }
+
+    pub fn decrease_outergaps(&mut self) {
+        if !self.active {
+            return;
+        }
+        if let Some(layout) = self.layouts.focused_mut() {
+            layout.decrease_outergaps(10);
+        }
+        self.perform_layout();
+    }
+
+    pub fn increase_outergaps(&mut self) {
+        if !self.active {
+            return;
+        }
+        if let Some(layout) = self.layouts.focused_mut() {
+            layout.increase_outergaps(10);
+        }
+        self.perform_layout();
+    }
+
     pub fn increase_master(&mut self) {
         if !self.active {
             return;
@@ -127,7 +167,11 @@ impl WorkSpace {
     }
 
     pub fn remove_window(&mut self, window_id: &WindowId) -> WindowId {
-        info!("Removing window from workspace {}: {}", self.name(), window_id);
+        info!(
+            "Removing window from workspace {}: {}",
+            self.name(),
+            window_id
+        );
         let removed: WindowId = self.stack.remove(|w| w == window_id);
         self.change_master();
         self.perform_layout();
@@ -156,7 +200,11 @@ impl WorkSpace {
     }
 
     pub fn focus(&mut self, window_id: &WindowId) {
-        info!("Focusing window in workspace {}: {}", self.name(), window_id);
+        info!(
+            "Focusing window in workspace {}: {}",
+            self.name(),
+            window_id
+        );
         self.stack.focus(|id| id == window_id);
         self.perform_layout();
     }
