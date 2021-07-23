@@ -62,49 +62,34 @@ impl WorkSpace {
     }
 
     pub fn decrease_innergaps(&mut self) {
-        if !self.active {
-            return;
-        }
         if let Some(layout) = self.layouts.focused_mut() {
-            layout.decrease_innergaps(10);
+            layout.decrease_innergaps();
         }
         self.perform_layout();
     }
 
     pub fn increase_innergaps(&mut self) {
-        if !self.active {
-            return;
-        }
         if let Some(layout) = self.layouts.focused_mut() {
-            layout.increase_innergaps(10);
+            layout.increase_innergaps();
         }
         self.perform_layout();
     }
 
     pub fn decrease_outergaps(&mut self) {
-        if !self.active {
-            return;
-        }
         if let Some(layout) = self.layouts.focused_mut() {
-            layout.decrease_outergaps(10);
+            layout.decrease_outergaps();
         }
         self.perform_layout();
     }
 
     pub fn increase_outergaps(&mut self) {
-        if !self.active {
-            return;
-        }
         if let Some(layout) = self.layouts.focused_mut() {
-            layout.increase_outergaps(10);
+            layout.increase_outergaps();
         }
         self.perform_layout();
     }
 
     pub fn increase_master(&mut self) {
-        if !self.active {
-            return;
-        }
         if let Some(layout) = self.layouts.focused_mut() {
             layout.increase_master(&self.viewport, 160);
         }
@@ -112,9 +97,6 @@ impl WorkSpace {
     }
 
     pub fn decrease_master(&mut self) {
-        if !self.active {
-            return;
-        }
         if let Some(layout) = self.layouts.focused_mut() {
             layout.decrease_master(&self.viewport, 160);
         }
