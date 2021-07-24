@@ -289,7 +289,6 @@ impl Volan {
                 Event::UnmapNotify(window_id) => self.on_unmap_notify(&window_id),
                 Event::DestroyNotify(window_id) => self.on_destroy_notify(&window_id),
                 Event::KeyPress(key) => self.on_key_press(key),
-                Event::EnterNotify(window_id) => self.on_enter_notify(&window_id),
             }
         }
         info!("Event loop exiting");
@@ -330,9 +329,5 @@ impl Volan {
                 error!("Error running command for key command {:?}: {}", key, error);
             }
         }
-    }
-
-    fn on_enter_notify(&mut self, window_id: &WindowId) {
-        self.group_mut().focus(window_id);
     }
 }

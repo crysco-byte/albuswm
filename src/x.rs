@@ -5,9 +5,9 @@ use failure::{format_err, ResultExt};
 use xcb_util::keysyms::KeySymbols;
 use xcb_util::{ewmh, icccm};
 
-use crate::workspaces::WorkSpace;
 use crate::keys::{KeyCombo, KeyHandlers};
 use crate::stack::Stack;
+use crate::workspaces::WorkSpace;
 use crate::Result;
 use crate::Viewport;
 
@@ -409,7 +409,6 @@ pub enum Event {
     UnmapNotify(WindowId),
     DestroyNotify(WindowId),
     KeyPress(KeyCombo),
-    EnterNotify(WindowId),
 }
 
 /// An iterator that yields events from the X event loop.
@@ -441,7 +440,6 @@ impl<'a> Iterator for EventLoop<'a> {
                     xcb::UNMAP_NOTIFY => self.on_unmap_notify(xcb::cast_event(&event)),
                     xcb::DESTROY_NOTIFY => self.on_destroy_notify(xcb::cast_event(&event)),
                     xcb::KEY_PRESS => self.on_key_press(xcb::cast_event(&event)),
-                    xcb::ENTER_NOTIFY => self.on_enter_notify(xcb::cast_event(&event)),
                     _ => None,
                 };
 
@@ -509,10 +507,6 @@ impl<'a> EventLoop<'a> {
         let mod_mask = u32::from(event.state());
         let key = KeyCombo { mod_mask, keysym };
         Some(Event::KeyPress(key))
-    }
-
-    fn on_enter_notify(&self, event: &xcb::EnterNotifyEvent) -> Option<Event> {
-        Some(Event::EnterNotify(WindowId(event.event())))
     }
 }
 
