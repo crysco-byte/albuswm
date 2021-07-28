@@ -54,19 +54,19 @@ key_bindings:
   - {function: DecreaseOuterGaps, masks: Mod1|Shift,    key: XK_2  }
 
 spawn_bindings:
-  - {command: pkill,          args: Xorg|volanwm,     key: XK_q,      masks: Mod1}
+  - {command: pkill,          args: Xorg,             key: XK_q,      masks: Mod1}
   - {command: qutebrowser,    args:,                  key: XK_o,      masks: Mod1}
   - {command: alacritty,      args:,                  key: XK_Return, masks: Mod1}
   - {command: emacs,          args:,                  key: XK_space,  masks: Mod1}
   - {command: dmenu_run,      args:,                  key: XK_p,      masks: Mod1}
 
 work_spaces:
-  - {name: alpha,     layout: c_master,   key: XK_a,      masks: Mod1}
-  - {name: beta,      layout: c_master,   key: XK_s,      masks: Mod1}
-  - {name: gamma,     layout: tile,       key: XK_d,      masks: Mod1}
-  - {name: delta,     layout: tile,       key: XK_f,      masks: Mod1}
+  - {name: alpha,     layout: tile,           key: XK_a,      masks: Mod1}
+  - {name: beta,      layout: tile,           key: XK_s,      masks: Mod1}
+  - {name: gamma,     layout: c_master,       key: XK_d,      masks: Mod1}
+  - {name: delta,     layout: c_master,       key: XK_f,      masks: Mod1}
 
 gaps:
-  inner: 5
-  outer: 20
+  inner: 0
+  outer: 0
 ";
